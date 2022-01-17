@@ -544,6 +544,7 @@ l_3
 \end{equation*}
 
 *** Reachable Workspace
+<<sec:reachable>>
 
 Note that the magnitude of each vector term in the above equation is equal to 1:
 \begin{equation*}
@@ -750,7 +751,7 @@ Let $d$ be the desired end effector position.
 In base coordinates, the dextrous workspace is all positions $d$ that can be reached with arbitrary $\theta_3$.
 For this to be true, the points of a circle with radius $l_3$ centered at $d$ must be within the reachable workspace of links $l_{1,2}$.
 
-Using the same argument above, we note that the reachable workspace of the first two links is bounded between two circles with radii $l_1 - l_2$ and $l_1 + l_2$[fn:l1gl2].
+Using the same argument in Section [[sec:reachable]] for the reachable workspace of the first two links, we note that the reachable workspace of links $l_{1,2}$ is bounded between two circles with radii $l_1 - l_2$ and $l_1 + l_2$[fn:l1gl2].
 
 All circles with radius $l_3$ that fit within this space must be centered between $l_1 - l_2 + l_3$ and $l_1 + l_2 - l_3$.
 
@@ -852,7 +853,7 @@ r_{1,2r_\text{min}} &\le l_3
 \end{align*}
 
 This means that the points of a circle with radius $l_3$ can fit around the inner boundary of the dextrous space of the first two links[fn:l3smallerthanl1plusl2].
-In this case, there is another circular reigion of dextrous workspace centered around the base joint with radius $l_2 + l_3 - l_3$.
+In this case, there is another circular reigion of dextrous workspace centered around the base joint with radius $l_2 + l_3 - l_1$.
 
 This is shown graphically below
 (boundaries of the reachable workspace for $l_{1,2}$ shown in green, blue shows all positions required for dextrous placement of end effector within reachable workspace of $l_{1,2}$, boundary of the inner dextrous workspace shown in black):
