@@ -1,0 +1,431 @@
+#+TITLE: MECH 464 Homework Assignment 2
+#+AUTHOR: Jasper Chan - 37467164 @@latex:\\@@ jasperchan515@gmail.com
+
+#+OPTIONS: toc:nil H:5 num:t
+
+
+#+LATEX_HEADER: \definecolor{bg}{rgb}{0.95,0.95,0.95}
+#+LATEX_HEADER: \setminted{frame=single,bgcolor=bg,samepage=true}
+#+LATEX_HEADER: \setlength{\parindent}{0pt}
+#+LATEX_HEADER: \sisetup{per-mode=fraction}
+#+LATEX_HEADER: \usepackage[shellescape]{gmp}
+#+LATEX_HEADER: \usepackage{gauss}
+#+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{svg}
+#+LATEX_HEADER: \usepackage{cancel}
+#+LATEX_HEADER: \usepackage{amssymb}
+#+LATEX_HEADER: \usepackage{accents}
+#+LATEX_HEADER: \usepackage{titlesec}
+#+LATEX_HEADER: \usepackage{mathtools, nccmath}
+#+LATEX_HEADER: \newcommand{\Lwrap}[1]{\left\{#1\right\}}
+#+LATEX_HEADER: \newcommand{\Lagr}[1]{\mathcal{L}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Lagri}[1]{\mathcal{L}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztrans}[1]{\mathcal{Z}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztransi}[1]{\mathcal{Z}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\ZOH}[1]{\text{ZOH}\left(#1\right)}
+#+LATEX_HEADER: \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+#+LATEX_HEADER: \makeatletter \AtBeginEnvironment{minted}{\dontdofcolorbox} \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}} \makeatother
+#+LATEX_HEADER: \titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+#+LATEX_HEADER: \titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{0.5em}
+#+LATEX_HEADER: \setcounter{secnumdepth}{5}
+#+LATEX_HEADER: \newcommand\munderbar[1]{\underaccent{\bar}{#1}}
+#+LATEX_HEADER: \newcommand\dmunderbar[1]{\munderbar{\munderbar{#1}}}
+
+* Exercise 1
+Find the inverse of the following $4 \times 4$ matrix, where the $3 \times 3$ matrix is a rotation.
+
+\begin{equation*}
+\begin{bmatrix}
+    Q   & d \\
+    0^T & 1
+\end{bmatrix}
+\end{equation*}
+
+** Solution
+The blockwise matrix inversion formula is given as:
+\begin{align*}
+\begin{bmatrix}
+    \mathbf{A} & \mathbf{B} \\
+    \mathbf{C} & \mathbf{D}
+\end{bmatrix}^{-1}
+&=
+\begin{bmatrix}
+    \mathbf{A}^{-1} + \mathbf{A}^{-1}\mathbf{B}\left(\mathbf{D} - \mathbf{CA}^{-1}\mathbf{B}\right)^{-1}\mathbf{CA}^{-1} &
+    -\mathbf{A}^{-1}\mathbf{B}\left(\mathbf{D} - \mathbf{CA}^{-1}\mathbf{B}\right)^{-1} \\
+    -\left(\mathbf{D} - \mathbf{CA}^{-1}\mathbf{B}\right)^{-1}\mathbf{CA}^{-1} &
+    \left(\mathbf{D} - \mathbf{CA}^{-1}\mathbf{B}\right)^{-1}
+\end{bmatrix}
+\end{align*}
+
+We note that the only blocks that need to be inverted are $\mathbf{A}$ and $\mathbf{D} - \mathbf{CA}^{-1}\mathbf{B}$.
+
+For the first block, we are given $\mathbf{A} = Q$, which is a proper rotation matrix.
+The inverse of a rotation matrix $Q^{-1}$ is just the transpose $Q^T$.
+
+Subbing in the values for the other block:
+\begin{align*}
+\left(\mathbf{D} - \mathbf{CA}^{-1}\mathbf{B}\right)^{-1}
+&=
+\left(
+    (1) - (0^T)(Q^T)(d)
+\right)^{-1} \\
+&= (1)^{-1} \\
+&= 1
+\end{align*}
+
+Subbing everything in:
+\begin{align*}
+\begin{bmatrix}
+Q   & d \\
+0^T & 1
+\end{bmatrix}^{-1}
+&=
+\begin{bmatrix}
+    Q^T + Q^Td\left(1 - 0Q^Td\right)^{-1}0Q^T &
+    -Q^Td\left(1 - 0Q^Td\right)^{-1} \\
+    -\left(1 - 0Q^Td\right)^{-1}0Q^T &
+    \left(1 - 0Q^Td\right)^{-1}
+\end{bmatrix} \\
+&=
+\begin{bmatrix}
+    Q^T &
+    -Q^Td \\
+    0^T &
+    1
+\end{bmatrix} \\
+\end{align*}
+
+* Exercise 2
+** Question 1
+A vector product function is specified as
+$\dmunderbar{f}(x) = (-2\munderbar{i}_0 + 3\munderbar{j}_0 - 5\munderbar{k}_0) \times \munderbar{x}$.
+
+What is the matrix representation of
+$\dmunderbar{f}$
+in
+$\munderbar{C}_0 = \begin{bmatrix}\munderbar{i}_0 & \munderbar{j}_0 & \munderbar{k}_0\end{bmatrix}$?
+
+What is the matrix representation of
+$\dmunderbar{f}$
+in
+$\munderbar{C}_1 = \begin{bmatrix}\munderbar{i}_1 & \munderbar{j}_1 & \munderbar{k}_1\end{bmatrix} = \begin{bmatrix}-\munderbar{i}_0 & -\munderbar{j}_0 & \munderbar{k}_0\end{bmatrix}$?
+*** Solution
+**** Matrix representation in \underbar{$C$}_0
+Rewriting the provided definition of $\munderbar{C}_0$:
+\begin{align*}
+\dmunderbar{f}(x)
+&=
+\munderbar{C}_0
+\underbrace{
+    \begin{bmatrix}
+        -2 \\ 3 \\ -5
+    \end{bmatrix}
+}_{^0s}
+\times \munderbar{x}
+\end{align*}
+
+We can then group the vector with the skew operator:
+\begin{align*}
+\dmunderbar{f}(x)
+&=
+\munderbar{C}_0
+\underbrace{
+    \left(
+        \begin{bmatrix}
+            -2 \\ 3 \\ -5
+        \end{bmatrix}
+        \times
+    \right)
+}_{^0s \times}
+\munderbar{x}
+\\
+&=
+\munderbar{C}_0
+\begin{bmatrix}
+     0 &  5 & 3 \\
+    -5 &  0 & 2 \\
+    -3 & -2 & 0
+\end{bmatrix}
+\munderbar{x}
+\end{align*}
+The matrix representation of the function is then:
+\begin{align*}
+{^0s} \times
+&=
+\begin{bmatrix}
+     0 &  5 & 3 \\
+    -5 &  0 & 2 \\
+    -3 & -2 & 0
+\end{bmatrix}
+\end{align*}
+**** Matrix representation in \underbar{$C$}_1
+We note that
+\begin{align*}
+\munderbar{C}_0 &= \munderbar{C}_1 {^1C_0}
+\end{align*}
+
+If we sub in the definitions of $\munderbar{C}_{0,1}$ using the $\munderbar{C}_0$ unit vectors and solve for ${^1C_0}$[fn:transformmatrix]:
+\begin{align*}
+\begin{bmatrix}
+    \munderbar{i}_0 &
+    \munderbar{j}_0 &
+    \munderbar{k}_0
+\end{bmatrix}
+&=
+\begin{bmatrix}
+    -\munderbar{i}_0 &
+    -\munderbar{j}_0 &
+     \munderbar{k}_0
+\end{bmatrix}
+{^1C_0} \\
+&= 
+\begin{bmatrix}
+    -\munderbar{i}_0 &
+    -\munderbar{j}_0 &
+     \munderbar{k}_0
+\end{bmatrix}
+\begin{bmatrix}
+    -1 &  0 & 0 \\
+     0 & -1 & 0 \\
+     0 &  0 & 1
+\end{bmatrix}
+\end{align*}
+[fn:transformmatrix] Coincidentally ${^0C_1} = {^1C_0}$
+
+
+
+
+
+The matrix representation in $\munderbar{C}_1$ is then:
+\begin{align*}
+{^1s} \times
+&=
+\left(
+    {^0C_1}
+    {^0s}
+\right)
+\times
+\\
+&=
+\left(
+    \begin{bmatrix}
+        -1 &  0 & 0 \\
+        0 & -1 & 0 \\
+        0 &  0 & 1
+    \end{bmatrix}
+    \begin{bmatrix}
+        -2 \\ 3 \\ -5
+    \end{bmatrix}
+\right)
+\times
+\\
+&=
+\begin{bmatrix}
+    2 \\ -3 \\ -5
+\end{bmatrix}
+\times
+\\
+&=
+\begin{bmatrix}
+     0 &  5 & -3 \\
+    -5 &  0 & -2 \\
+     3 &  2 &  0
+\end{bmatrix}
+\end{align*}
+** Question 2
+What is the coordinate representation
+${^0Q}$
+in
+$\munderbar{C}_0$
+of a rotation
+$\munderbar{y} = \dmunderbar{Q}\left(\munderbar{k}_0, \frac{\pi}{2}\right)\munderbar{x}$
+about axis
+$\munderbar{k}_0$
+of angle
+$\pi/2$?
+*** Solution
+The rotation matrix about the $\munderbar{k}$ axis (in any frame) is:
+\begin{align*}
+R(k, \theta)
+\triangleq
+\begin{bmatrix}
+    \cos\theta & -\sin\theta & 0 \\
+    \sin\theta &  \cos\theta & 0 \\
+    0          &  0          & 1
+\end{bmatrix}
+\end{align*}
+
+Subbing in our values:
+\begin{align*}
+{^0Q}
+=
+R(k, \frac{\pi}{2})
+&=
+\begin{bmatrix}
+    \cos\frac{\pi}{2} & -\sin\frac{\pi}{2} & 0 \\
+    \sin\frac{\pi}{2} &  \cos\frac{\pi}{2} & 0 \\
+    0                 &  0                 & 1
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+    0 & -1 & 0 \\
+    1 &  0 & 0 \\
+    0 &  0 & 1
+\end{bmatrix}
+\end{align*}
+
+
+** Question 3
+What is the coordinate representation
+${^0R}$
+in
+$\munderbar{C}_0$
+of a rotation
+$\munderbar{y} = \dmunderbar{R}\left(\munderbar{i}_0, \frac{\pi}{6}\right)\munderbar{x}$
+about axis
+$\munderbar{i}_0$
+of angle
+$\pi/6$?
+*** Solution
+The rotation matrix about the $\munderbar{i}$ axis (in any frame) is:
+\begin{align*}
+R(i, \theta)
+\triangleq
+\begin{bmatrix}
+    1 & 0          & 0 \\
+    0 & \cos\theta & -\sin\theta \\
+    0 & \sin\theta &  \cos\theta 
+\end{bmatrix}
+\end{align*}
+
+Subbing in our values:
+\begin{align*}
+{^0Q}
+=
+R(k, \frac{\pi}{6})
+&=
+\begin{bmatrix}
+    1 & 0                 & 0 \\
+    0 & \cos\frac{\pi}{6} & -\sin\frac{\pi}{6} \\
+    0 & \sin\frac{\pi}{6} &  \cos\frac{\pi}{6} 
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+    1 & 0                  & 0 \\
+    0 & \frac{\sqrt{3}}{2} & -\frac{1}{2} \\
+    0 & \frac{1}{2}        & \frac{\sqrt{3}}{2} 
+\end{bmatrix}
+\end{align*}
+** Question 4
+What is the coordinate representation of the composition of the two rotations
+$\munderbar{y} = \dmunderbar{R}\left(\munderbar{i}_0, \frac{\pi}{6}\right) \dmunderbar{Q}\left(\munderbar{k}_0, \frac{\pi}{2}\right)\munderbar{x}$
+in
+$\munderbar{C}_0$?
+*** Solution
+
+Multiplying our two rotation matrices together:
+\begin{align*}
+{^0R}{^0Q}
+&=
+\begin{bmatrix}
+    1 & 0                  &  0 \\
+    0 & \frac{\sqrt{3}}{2} & -\frac{1}{2} \\
+    0 & \frac{1}{2}        &  \frac{\sqrt{3}}{2} 
+\end{bmatrix}
+\begin{bmatrix}
+    0 & -1 & 0 \\
+    1 &  0 & 0 \\
+    0 &  0 & 1
+\end{bmatrix} \\
+&=
+\begin{bmatrix}
+    0                  & -1 &  0 \\
+    \frac{\sqrt{3}}{2} &  0 & -\frac{1}{2} \\
+    \frac{1}{2}        &  0 &  \frac{\sqrt{3}}{2}
+\end{bmatrix}
+\triangleq
+{^0S}
+\end{align*}
+** Question 5
+Let
+$\munderbar{C}_1$
+be the rotated frame
+$\munderbar{C}_1 = \dmunderbar{Q}\left(\munderbar{k}_0, \frac{\pi}{2}\right)\munderbar{C}_0$.
+
+What is the coordinate representation of the composition of the two rotations
+$\munderbar{y} = \dmunderbar{R}\left(\munderbar{i}_0, \frac{\pi}{6}\right) \dmunderbar{Q}\left(\munderbar{k}_0, \frac{\pi}{2}\right)\munderbar{x}$
+in
+$\munderbar{C}_1$?
+*** Solution
+Rewriting the rotated frame using the coordinate representation ${^0Q}$:
+\begin{align*}
+\munderbar{C}_1
+=
+\dmunderbar{Q}\left(\munderbar{k}_0, \frac{\pi}{2}\right)\munderbar{C}_0
+&=
+\munderbar{C}_0\underbrace{^0Q}_{^0C_1}
+\end{align*}
+
+The coordinate representation of the composite rotation in $\munderbar{C}_1$ is then:
+\begin{align*}
+{^1S}
+&=
+\left(
+    {^1C_0}
+\right)
+{^0S}
+\\
+&=
+\left(
+    {^0C_1}
+\right)^{-1}
+{^0S}
+\\
+&=
+\left(
+    {^0Q}
+\right)^{-1}
+{^0S}
+\\
+&=
+{^0Q}^T
+{^0S}
+\\
+&=
+\begin{bmatrix}
+     0 & 1 & 0 \\
+    -1 & 0 & 0 \\
+     0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+    0                  & -1 &  0 \\
+    \frac{\sqrt{3}}{2} &  0 & -\frac{1}{2} \\
+    \frac{1}{2}        &  0 &  \frac{\sqrt{3}}{2}
+\end{bmatrix} \\
+&=
+\begin{bmatrix}
+    \frac{\sqrt{3}}{2} & 0 & -\frac{1}{2} \\
+    0                  & 1 &  0 \\
+    \frac{1}{2}        & 0 &  \frac{\sqrt{3}}{2}
+\end{bmatrix}
+\end{align*}
+
+* Exercise 3
+Write a Simulink model to integrate
+$\dot{Q} = \omega \times Q$,
+$\dot{\omega} = \tau$,
+$\omega(0) = 0$,
+$Q(0) = I$,
+driven by a specified torque $\tau$.
+Animate the motion (block provided in Simulink tutorial, can use a frame or other) whose coordinate transformation is given by $Q$.
+This corresponds to your animating a rigid body having an inertia matrix equal to the identity.
+Does the matrix $Q(t)$ remain a rotation matrix for all $t$ as you integrate it?
+If not, how would you fix it?
+Provide $Q(t)$ and the animation (or just last image) for the following cases:
+
+1. $\tau = \begin{bmatrix}0 &  0 & 1 \end{bmatrix}^T, t = \SI{5}{\second}$
+2. $\tau = \begin{bmatrix}0 & -1 & 1 \end{bmatrix}^T, t = \SI{8}{\second}$
+3. $\tau = \begin{bmatrix}1 &  1 & -1\end{bmatrix}^T, t = \SI{4}{\second}$
+
