@@ -429,3 +429,185 @@ Provide $Q(t)$ and the animation (or just last image) for the following cases:
 2. $\tau = \begin{bmatrix}0 & -1 & 1 \end{bmatrix}^T, t = \SI{8}{\second}$
 3. $\tau = \begin{bmatrix}1 &  1 & -1\end{bmatrix}^T, t = \SI{4}{\second}$
 
+** Solution
+#+begin_src matlab :session :exports none :eval never-export
+simulink
+#+end_src
+
+#+RESULTS:
+
+First let's define a skew helper function:
+#+begin_src matlab :exports code :tangle skew.m :eval never
+function sx = skew(s)
+    sx = [...
+         0    -s(3)  s(2);...
+         s(3)  0    -s(1);...
+        -s(2)  s(1)  0];
+end
+#+end_src
+
+As indicated by the question, $Q$ will not remain a rotation matrix since Simulink uses numerical methods with finite precision;
+the length of the rotation axis will change over time.
+
+Let's define a helper function to fix this error:
+#+begin_src matlab :exports code :tangle ensure_rotation.m :eval never
+function Q = ensure_rotation(Q_dirty)
+    lambdas = eig(Q_dirty);
+    % Get eigenvalue with positive imaginary part
+    thetas = imag(log(lambdas));
+    theta = thetas(thetas > 0);
+    if isempty(theta)
+        % No rotation, treat as identity
+        Q = eye(3);
+        return
+    end
+    sx_dirty = logm(Q_dirty)/theta;
+    s_dirty = [sx_dirty(3, 2); -sx_dirty(3, 1); sx_dirty(2, 1)];
+    s = s_dirty/norm(s_dirty);
+    Q = expm(theta*skew(s));
+end
+#+end_src
+
+We also need a scene for our VR Sink to display, so let's define that here:
+#+begin_src perl :exports both :tangle SingleBox.wrl :eval
+#VRML V2.0 utf8
+
+Viewpoint {
+   position 0 -5 5
+   orientation 1 0 0 0.78
+   fieldOfView 1
+   description "Camera 1"
+}
+
+DirectionalLight {
+    direction 1 1 0
+}
+
+DEF Box Transform {
+  rotation 0 0 1 0
+  children Shape {
+    appearance Appearance {
+      material Material {
+        diffuseColor 1 1 0
+      }
+    }
+    geometry Box {
+        size 1 2 3
+    }
+  }
+}
+#+end_src
+
+With this, we can create our Simulink model:
+#+begin_src matlab :session :exports none :results none
+% dummy value so system loads properly
+tau = [0; 0; 1];
+open_system('exercise3');
+print -dsvg -s 'exercise3.svg'
+#+end_src
+
+#+begin_src bash :results none :exports none
+inkscape exercise3.svg --export-text-to-path --export-plain-svg -o exercise3_fixed.svg
+#+end_src
+
+[[file:exercise3_fixed.svg]]
+
+
+*** $\tau = \begin{bmatrix}0 &  0 & 1 \end{bmatrix}^T, t = \SI{5}{\second}$
+Running our simulation with the specified parameters:
+#+begin_src matlab :session :exports both :results code output
+tau = [0; 0; 1];
+out = sim('exercise3', 5);
+Q_last = out.Q.Data(:,:,end)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+#+end_src
+
+Note the video stream coming from the VR Sink is in a slightly different format than what is expected from the To Multimedia File block, we need to post-process the video in ~ffmpeg~ to get the orientation right:
+#+begin_src bash :results output :exports both
+ffmpeg -y -i output.avi \
+       -vf "transpose=0,transpose=0" \
+       -c:v libx264 -crf 22 transposed.mp4
+#+end_src
+
+#+RESULTS:
+
+Grabbing the last frame:
+#+begin_src bash :results output :exports both
+ffmpeg -y -sseof -3 -i transposed.mp4 -vsync 0 -update true out1.png
+#+end_src
+
+#+RESULTS:
+
+[[file:out1.png]]
+
+
+*** $\tau = \begin{bmatrix}0 & -1 & 1 \end{bmatrix}^T, t = \SI{8}{\second}$
+#+begin_src matlab :session :exports both :results code output
+tau = [0; -1; 1];
+out = sim('exercise3', 8);
+Q_last = out.Q.Data(:,:,end)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+Q_last =
+    0.3276   -0.6617   -0.6744
+    0.6744    0.6637   -0.3236
+    0.6617   -0.3489    0.6637
+#+end_src
+
+Note the video stream coming from the VR Sink is in a slightly different format than what is expected from the To Multimedia File block, we need to post-process the video in ~ffmpeg~ to get the orientation right:
+#+begin_src bash :results output :exports both
+ffmpeg -y -i output.avi \
+       -vf "transpose=0,transpose=0" \
+       -c:v libx264 -crf 22 transposed.mp4
+#+end_src
+
+#+RESULTS:
+
+Grabbing the last frame:
+#+begin_src bash :results output :exports both
+ffmpeg -y -sseof -3 -i transposed.mp4 -vsync 0 -update true out2.png
+#+end_src
+
+#+RESULTS:
+
+[[file:out2.png]]
+*** $\tau = \begin{bmatrix}1 &  1 & -1\end{bmatrix}^T, t = \SI{4}{\second}$
+#+begin_src matlab :session :exports both :results code output
+tau = [1; 1; -1];
+out = sim('exercise3', 4);
+Q_last = out.Q.Data(:,:,end)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+Q_last =
+    0.5181    0.7957    0.3137
+   -0.3138    0.5181   -0.7957
+   -0.7957    0.3138    0.5181
+#+end_src
+
+Note the video stream coming from the VR Sink is in a slightly different format than what is expected from the To Multimedia File block, we need to post-process the video in ~ffmpeg~ to get the orientation right:
+#+begin_src bash :results output :exports both
+ffmpeg -y -i output.avi \
+       -vf "transpose=0,transpose=0" \
+       -c:v libx264 -crf 22 transposed.mp4
+#+end_src
+
+#+RESULTS:
+
+Grabbing the last frame:
+#+begin_src bash :results output :exports both
+ffmpeg -y -sseof -3 -i transposed.mp4 -vsync 0 -update true out3.png
+#+end_src
+
+#+RESULTS:
+
+[[file:out3.png]]
+
+
+
