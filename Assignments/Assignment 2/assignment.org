@@ -506,9 +506,11 @@ open_system('exercise3');
 print -dsvg -s 'exercise3.svg'
 #+end_src
 
-#+begin_src bash :results none :exports none
+#+begin_src bash :results output :exports none
 inkscape exercise3.svg --export-text-to-path --export-plain-svg -o exercise3_fixed.svg
 #+end_src
+
+#+RESULTS:
 
 [[file:exercise3_fixed.svg]]
 
@@ -545,6 +547,7 @@ ffmpeg -y -sseof -3 -i transposed.mp4 -vsync 0 -update true out1.png
 
 
 *** $\tau = \begin{bmatrix}0 & -1 & 1 \end{bmatrix}^T, t = \SI{8}{\second}$
+Running our simulation with the specified parameters:
 #+begin_src matlab :session :exports both :results code output
 tau = [0; -1; 1];
 out = sim('exercise3', 8);
@@ -577,6 +580,7 @@ ffmpeg -y -sseof -3 -i transposed.mp4 -vsync 0 -update true out2.png
 
 [[file:out2.png]]
 *** $\tau = \begin{bmatrix}1 &  1 & -1\end{bmatrix}^T, t = \SI{4}{\second}$
+Running our simulation with the specified parameters:
 #+begin_src matlab :session :exports both :results code output
 tau = [1; 1; -1];
 out = sim('exercise3', 4);
