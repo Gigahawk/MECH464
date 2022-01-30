@@ -30,6 +30,8 @@
 #+LATEX_HEADER: \setcounter{secnumdepth}{5}
 #+LATEX_HEADER: \newcommand\munderbar[1]{\underaccent{\bar}{#1}}
 #+LATEX_HEADER: \newcommand\dmunderbar[1]{\munderbar{\munderbar{#1}}}
+#+LATEX_HEADER: \newcommand{\norm}[1]{\| #1 \|}
+#+LATEX_HEADER: \newcommand*\phantomrel[1]{\mathrel{\phantom{#1}}}% My preferred typesetting
 
 * Exercise 1
 Find the inverse of the following $4 \times 4$ matrix, where the $3 \times 3$ matrix is a rotation.
@@ -435,6 +437,7 @@ simulink
 #+end_src
 
 #+RESULTS:
+: org_babel_eoe
 
 First let's define a skew helper function:
 #+begin_src matlab :exports code :tangle skew.m :eval never
@@ -453,7 +456,7 @@ Let's define a helper function to fix this error:
 #+begin_src matlab :exports code :tangle ensure_rotation.m :eval never
 function Q = ensure_rotation(Q_dirty)
     lambdas = eig(Q_dirty);
-    % Get eigenvalue with positive imaginary part
+    % Get eigenvalue with positive imaginary part to  find positive theta
     thetas = imag(log(lambdas));
     theta = thetas(thetas > 0);
     if isempty(theta)
@@ -461,9 +464,12 @@ function Q = ensure_rotation(Q_dirty)
         Q = eye(3);
         return
     end
+    % Extract rotation axis
     sx_dirty = logm(Q_dirty)/theta;
     s_dirty = [sx_dirty(3, 2); -sx_dirty(3, 1); sx_dirty(2, 1)];
+    % Ensure rotation axis is unit length
     s = s_dirty/norm(s_dirty);
+    % Reconstruct rotation matrix
     Q = expm(theta*skew(s));
 end
 #+end_src
@@ -613,5 +619,502 @@ ffmpeg -y -sseof -3 -i transposed.mp4 -vsync 0 -update true out3.png
 
 [[file:out3.png]]
 
+* Exercise 4
+Write a Simulink block to integrate the quaternion, with the same $\tau$ and $\omega$ as in Exercise 3.
+Generate the rotation matrix, animate the motion.
+How about $q(t)$, does it remain a "unit" quaternion?
+Propose and implement a method to fix this.
+Discuss.
+
+** Solution
+From the notes, the quaternion equivalent of $\dot{Q} = \omega \times Q$ is:
+\begin{align*}
+\dot{q}
+&=
+\frac{1}{2}
+\begin{bmatrix}
+    0 \\ \omega
+\end{bmatrix}
+\circ
+q
+\end{align*}
+
+The question does not specify $q(0)$, so I will assume $q(0) = 1 + \munderbar{0}$
+
+We again note that when using numerical methods with finite precision $q$ will not remain a unit quaternion, and so we need to normalize after integration to ensure it stays unit length.
+
+Creating our Simulink model[fn:transpose]:
+#+begin_src matlab :session :exports none :results none
+% dummy value so system loads properly
+tau = [0; 0; 1];
+open_system('exercise4');
+print -dsvg -s 'exercise4.svg'
+#+end_src
+
+#+begin_src bash :results output :exports none
+inkscape exercise4.svg --export-text-to-path --export-plain-svg -o exercise4_fixed.svg
+#+end_src
+
+#+RESULTS:
+
+[[file:exercise4_fixed.svg]]
+
+[fn:transpose] Transposing (inverting) the rotation matrix is necessary because the ~Quaternions to Direction Cosine Matrix~ block internally transposes the result, see https://www.mathworks.com/help/aeroblks/quaternionstodirectioncosinematrix.html for details.
+*** $\tau = \begin{bmatrix}0 &  0 & 1 \end{bmatrix}^T, t = \SI{5}{\second}$
+Running our simulation with the specified parameters:
+#+begin_src matlab :session :exports both :results code output
+tau = [0; 0; 1];
+out = sim('exercise4', 5);
+Q_last = out.Q.Data(:,:,end)
+quat_last = out.quat.Data(end,:)'
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+Q_last =
+    0.9978    0.0663         0
+   -0.0663    0.9978         0
+         0         0    1.0000
+quat_last =
+    0.9994
+         0
+         0
+   -0.0332
+#+end_src
+
+Note the video stream coming from the VR Sink is in a slightly different format than what is expected from the To Multimedia File block, we need to post-process the video in ~ffmpeg~ to get the orientation right:
+#+begin_src bash :results output :exports both
+ffmpeg -y -i output.avi \
+       -vf "transpose=0,transpose=0" \
+       -c:v libx264 -crf 22 transposed.mp4
+#+end_src
+
+#+RESULTS:
+
+Grabbing the last frame:
+#+begin_src bash :results output :exports both
+ffmpeg -y -sseof -3 -i transposed.mp4 -vsync 0 -update true out4.png
+#+end_src
+
+#+RESULTS:
+
+[[file:out4.png]]
+
+
+*** $\tau = \begin{bmatrix}0 & -1 & 1 \end{bmatrix}^T, t = \SI{8}{\second}$
+Running our simulation with the specified parameters:
+#+begin_src matlab :session :exports both :results code output
+tau = [0; -1; 1];
+out = sim('exercise4', 8);
+Q_last = out.Q.Data(:,:,end)
+quat_last = out.quat.Data(end,:)'
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+Q_last =
+    0.2940   -0.6759   -0.6759
+    0.6759    0.6470   -0.3530
+    0.6759   -0.3530    0.6470
+quat_last =
+   -0.8044
+         0
+    0.4201
+   -0.4201
+#+end_src
+
+Note the video stream coming from the VR Sink is in a slightly different format than what is expected from the To Multimedia File block, we need to post-process the video in ~ffmpeg~ to get the orientation right:
+#+begin_src bash :results output :exports both
+ffmpeg -y -i output.avi \
+       -vf "transpose=0,transpose=0" \
+       -c:v libx264 -crf 22 transposed.mp4
+#+end_src
+
+#+RESULTS:
+
+Grabbing the last frame:
+#+begin_src bash :results output :exports both
+ffmpeg -y -sseof -3 -i transposed.mp4 -vsync 0 -update true out5.png
+#+end_src
+
+#+RESULTS:
+
+[[file:out5.png]]
+*** $\tau = \begin{bmatrix}1 &  1 & -1\end{bmatrix}^T, t = \SI{4}{\second}$
+Running our simulation with the specified parameters:
+#+begin_src matlab :session :exports both :results code output
+tau = [1; 1; -1];
+out = sim('exercise4', 4);
+Q_last = out.Q.Data(:,:,end)
+quat_last = out.quat.Data(end,:)'
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+Q_last =
+    0.5181    0.7957    0.3137
+   -0.3138    0.5181   -0.7957
+   -0.7957    0.3138    0.5181
+#+end_src
+
+Note the video stream coming from the VR Sink is in a slightly different format than what is expected from the To Multimedia File block, we need to post-process the video in ~ffmpeg~ to get the orientation right:
+#+begin_src bash :results output :exports both
+ffmpeg -y -i output.avi \
+       -vf "transpose=0,transpose=0" \
+       -c:v libx264 -crf 22 transposed.mp4
+#+end_src
+
+#+RESULTS:
+
+Grabbing the last frame:
+#+begin_src bash :results output :exports both
+ffmpeg -y -sseof -3 -i transposed.mp4 -vsync 0 -update true out6.png
+#+end_src
+
+#+RESULTS:
+
+[[file:out6.png]]
+
+* Exercise 5
+** Question 1
+Show that for any
+$x \in \mathbb{R}^4$,
+$x^T e^{\theta(\hat{s} \circ)} x = \cos{\theta}\norm{x}^2$,
+where
+$e^{\theta (\hat{s}\circ)}$
+is given in equation (34), p.6 of the quaternion handout.
+
+*** Solution
+The equation referenced is:
+\begin{equation*}
+e^{\theta(\hat{s}\circ)}
+=
+\operatorname{exp}
+\left\{
+    \theta
+    \begin{bmatrix}
+        0       & -\hat{s}^T \\
+        \hat{s} & -\hat{s}\times
+    \end{bmatrix}
+\right\}
+=
+\cos{\theta}I + \sin{\theta}
+\begin{bmatrix}
+    0       & -\hat{s}^T \\
+    \hat{s} & -\hat{s}\times
+\end{bmatrix}
+\end{equation*}
+We also note that:
+\begin{align*}
+\norm{x}^2
+&\triangleq
+x^T x\\
+&\triangleq
+d_x^2 + a_x^2 + b_x^2 + c_x^2
+\end{align*}
+
+Using the right most expression to expand the given equation:
+\begin{align*}
+x^T e^{\theta(\hat{s} \circ)} x
+&=
+x^T
+\left(
+    \cos{\theta}I + \sin{\theta}
+    \begin{bmatrix}
+        0       & -\hat{s}^T \\
+        \hat{s} & -\hat{s}\times
+    \end{bmatrix}
+\right)
+x \\
+&=
+x^T
+\cos{\theta}I
+x
++
+x^T
+\sin{\theta}
+\begin{bmatrix}
+    0       & -\hat{s}^T \\
+    \hat{s} & -\hat{s}\times
+\end{bmatrix}
+x
+\end{align*}
+
+With some manipulation of the first term:
+\begin{align*}
+x^T e^{\theta(\hat{s} \circ)} x
+&=
+x^T
+\cos{\theta}I
+x
++
+x^T
+\sin{\theta}
+\begin{bmatrix}
+    0       & -\hat{s}^T \\
+    \hat{s} & -\hat{s}\times
+\end{bmatrix}
+x \\
+&=
+\cos{\theta}
+(x^Tx)
++
+x^T
+\sin{\theta}
+\begin{bmatrix}
+    0       & -\hat{s}^T \\
+    \hat{s} & -\hat{s}\times
+\end{bmatrix}
+x \\
+&=
+\cos{\theta}
+(d_x^2 + a_x^2 + b_x^2 + c_x^2)
++
+x^T
+\sin{\theta}
+\begin{bmatrix}
+    0       & -\hat{s}^T \\
+    \hat{s} & -\hat{s}\times
+\end{bmatrix}
+x \\
+&=
+\cos{\theta}
+\norm{x}^2
++
+x^T
+\sin{\theta}
+\begin{bmatrix}
+    0       & -\hat{s}^T \\
+    \hat{s} & -\hat{s}\times
+\end{bmatrix}
+x \\
+\end{align*}
+We see that we already have the desired value in the first term, now we have to prove that the second term is equal to $0$.
+\begin{align*}
+x^T e^{\theta(\hat{s} \circ)} x
+&=
+\cos{\theta}
+\norm{x}^2
++
+x^T
+\sin{\theta}
+\begin{bmatrix}
+    0       & -\hat{s}^T \\
+    \hat{s} & -\hat{s}\times
+\end{bmatrix}
+x \\
+&=
+\cos{\theta}
+\norm{x}^2
++
+\sin{\theta}
+\left(
+    x^T
+    \begin{bmatrix}
+        0       & -\hat{s}^T \\
+        \hat{s} & -\hat{s}\times
+    \end{bmatrix}
+    x
+\right) \\
+&=
+\cos{\theta}
+\norm{x}^2
++
+\sin{\theta}
+\left(
+    \begin{bmatrix}
+        d_x & a_x & b_x & c_x
+    \end{bmatrix}
+    \begin{bmatrix}
+        0   & -a_s & -b_s & -c_s \\
+        a_s &  0   & -c_s &  b_s \\
+        b_s &  c_s &  0   & -a_s \\
+        c_s & -b_s &  a_s &  0 
+    \end{bmatrix}
+    \begin{bmatrix}
+        d_x \\ a_x \\ b_x \\ c_x
+    \end{bmatrix}
+\right) \\
+&=
+\cos{\theta}
+\norm{x}^2
++
+\sin{\theta}
+\left(
+    \begin{bmatrix}
+        d_x & a_x & b_x & c_x
+    \end{bmatrix}
+    \begin{bmatrix}
+        -a_s a_x - b_s b_x - c_s c_x \\
+         a_s d_x - c_s b_x + b_s c_x \\
+         b_s d_x + c_s a_x - a_s c_x \\
+         c_s d_x - b_s a_x + a_s b_x
+    \end{bmatrix}
+\right) \\
+&=
+\cos{\theta}
+\norm{x}^2
++
+\sin{\theta}
+(
+    d_x(-a_s a_x - b_s b_x - c_s c_x)
+    + a_x(a_s d_x - c_s b_x + b_s c_x) \\
+&\phantomrel{=}
+\hphantom{
+    \cos{\theta}
+    \norm{x}^2
+    +
+    \sin{\theta}
+}
+    + b_x(b_s d_x + c_s a_x - a_s c_x)
+    + c_x(c_s d_x - b_s a_x + a_s b_x)
+) \\
+&=
+\cos{\theta}
+\norm{x}^2
++
+\sin{\theta}
+(
+    -d_x a_s a_x
+    -d_x b_s b_x
+    -d_x c_s c_x
+    +a_x a_s d_x
+    -a_x c_s b_x
+    +a_x b_s c_x \\
+&\phantomrel{=}
+\hphantom{
+    \cos{\theta}
+    \norm{x}^2
+    +
+    \sin{\theta}
+}
+    +b_x b_s d_x
+    +b_x c_s a_x
+    -b_x a_s c_x
+    +c_x c_s d_x
+    -c_x b_s a_x
+    +c_x a_s b_x
+)
+\end{align*}
+Rearranging to group like terms:
+\begin{align*}
+x^T e^{\theta(\hat{s} \circ)} x
+&=
+\cos{\theta}
+\norm{x}^2
++
+\sin{\theta}
+(
+    -d_x a_s a_x
+    -d_x b_s b_x
+    -d_x c_s c_x
+    +a_x a_s d_x
+    -a_x c_s b_x
+    +a_x b_s c_x \\
+&\phantomrel{=}
+\hphantom{
+    \cos{\theta}
+    \norm{x}^2
+    +
+    \sin{\theta}
+}
+    +b_x b_s d_x
+    +b_x c_s a_x
+    -b_x a_s c_x
+    +c_x c_s d_x
+    -c_x b_s a_x
+    +c_x a_s b_x
+) \\
+&=
+\cos{\theta}
+\norm{x}^2
++
+\sin{\theta}
+(
+    \cancelto{0}{
+        (
+            d_x a_x a_s
+            -d_x a_x a_s
+        )
+    }
+    +
+    \cancelto{0}{
+        (
+            d_x b_x b_s
+            -d_x b_x b_s
+        )
+    }
+    +
+    \cancelto{0}{
+        (
+            d_x c_x c_s
+            -d_x c_x c_s
+        )
+    }
+    \\
+&\phantomrel{=}
+\hphantom{
+    \cos{\theta}
+    \norm{x}^2
+    +
+    \sin{\theta}
+}
+    +
+    \cancelto{0}{
+        (
+            a_x b_x c_s
+            -a_x b_x c_s
+        )
+    }
+    +
+    \cancelto{0}{
+        (
+            a_x c_x b_s
+            -a_x c_x b_s
+        )
+    }
+    +
+    \cancelto{0}{
+        (
+            b_x c_x a_s
+            -b_x c_x a_s
+        )
+    }
+) \\
+&=
+\cos{\theta}
+\norm{x}^2
++
+\sin{\theta}(0) \\
+&=
+\cos{\theta}
+\norm{x}^2
+\end{align*}
+
+** Question 2
+Consider the function
+$f : \mathbb{R}^4 \to \mathbb{R}^4$
+defined by the quaternion product
+$f(x) = (d + ai)x(d + ai)^{-1}$
+(or in vector form
+$(d + a\munderbar{i}) \circ (d_x + \munderbar{v}_x) \circ (d + a\munderbar{i})^{-1}$),
+similarly to eq (45) p. 9 of the notes on Quaternions but with $x$ and $f(x)$ in $\mathbb{R}^4$.
+Also define
+$f_l(x) = (d + ai)x$
+and
+$f_r(x) = x(d + ai)^{-1}$,
+$f_l, f_r : \mathbb{R}^4 \to \mathbb{R}^4$.
+Clearly, $f_l$, $f_r$, and $f$ are linear.
+Find their matrix representations.
+What do each of these functions represent, geometrically?
+*** Solution
+The equation referenced is:
+\begin{align*}
+f(x)
+=
+(d + ck)
+x
+(d + ck)^{-1}
+\end{align*}
 
 
