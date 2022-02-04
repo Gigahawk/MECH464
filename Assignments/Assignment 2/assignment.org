@@ -1108,13 +1108,459 @@ Clearly, $f_l$, $f_r$, and $f$ are linear.
 Find their matrix representations.
 What do each of these functions represent, geometrically?
 *** Solution
-The equation referenced is:
+**** $f(x)$
+We need to find
+$f(1)$, $f(i)$, $f(j)$, $f(k)$,
+then form
+$f(x) = d_x f(1) + a_x f(i) + b_x f(j) + c_x f(k)$
+
+Finding $f(1)$:
 \begin{align*}
-f(x)
-=
-(d + ck)
-x
-(d + ck)^{-1}
+f(1)
+&=
+(d + ai)(1)(d + ai)^{-1} \\
+&=
+(d + ai)\frac{(d + ai)^*}{d^2 + a^2} \\
+&=
+\frac{
+    (d + ai)(d - ai)
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d^2 - dai + dai - a^2i^2
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d^2 + a^2
+}{
+    d^2 + a^2
+} \\
+&= 1
+\end{align*}
+
+Finding $f(i)$:
+\begin{align*}
+f(i)
+&=
+(d + ai)i(d + ai)^{-1} \\
+&=
+(di + ai^2)\frac{(d + ai)^*}{d^2 + a^2} \\
+&=
+\frac{
+    (di - a)(d - ai)
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d^2i - dai^2 - da + a^2i
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d^2i + da - da + a^2i
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d^2i + a^2i
+}{
+    d^2 + a^2
+} \\
+&= i
+\end{align*}
+
+Finding $f(j)$:
+\begin{align*}
+f(j)
+&=
+(d + ai)j(d + ai)^{-1} \\
+&=
+(dj + aij)\frac{(d + ai)^*}{d^2 + a^2} \\
+&=
+\frac{
+    (dj + ak)(d - ai)
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d^2j - daji + dak - a^2ki
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d^2j + dak + dak - a^2j
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d^2 - a^2
+}{
+    d^2 + a^2
+} j
++
+\frac{
+    2da
+}{
+    d^2 + a^2
+} k
+\end{align*}
+
+Finding $f(k)$:
+\begin{align*}
+f(k)
+&=
+(d + ai)k(d + ai)^{-1} \\
+&=
+(dk + aik)\frac{(d + ai)^*}{d^2 + a^2} \\
+&=
+\frac{
+    (dk - aj)(d - ai)
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d^2k - daki - daj + a^2ji
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d^2k - daj - daj + a^2ji
+}{
+    d^2 + a^2
+} \\
+&=
++
+\frac{
+    -2da
+}{
+    d^2 + a^2
+} j
++
+\frac{
+    d^2 - a^2
+}{
+    d^2 + a^2
+} k
+\end{align*}
+
+The matrix representation of $f$ is then:
+\begin{align*}
+A_f
+&=
+\begin{bmatrix}
+1 & 0 & 0                           & 0 \\
+0 & 1 & 0                           & 0 \\
+0 & 0 & \frac{d^2 - a^2}{d^2 + a^2} & \frac{-2da}{d^2 + a^2} \\
+0 & 0 & \frac{2da}{d^2 + a^2}       & \frac{d^2 - a^2}{d^2 + a^2}
+\end{bmatrix}
+\end{align*}
+
+**** Geometric Interpretation of $A_f$
+If we let
+\begin{align*}
+\cos{\theta}
+&=
+\frac{d}{\sqrt{d^2 + a^2}}
+&
+\sin{\theta}
+&=
+\frac{a}{\sqrt{d^2 + a^2}}
+\end{align*}
+
+Then we can substitute into $A_f$:
+\begin{align*}
+A_f
+&=
+\begin{bmatrix}
+1 & 0 & 0                               &  0 \\
+0 & 1 & 0                               &  0 \\
+0 & 0 & \cos^2{\theta} - \sin^2{\theta} & -2\cos{\theta}\sin{\theta} \\
+0 & 0 & 2\cos{\theta}\sin{\theta}       &  \cos^2{\theta} - \sin^2{\theta}
+\end{bmatrix} \\
+&=
+\begin{bmatrix}
+1 & 0 & 0             &  0 \\
+0 & 1 & 0             &  0 \\
+0 & 0 & \cos{2\theta} & -\sin{2\theta} \\
+0 & 0 & \sin{2\theta} &  \cos{2\theta}
+\end{bmatrix}
+\end{align*}
+
+Which as expected is the rotation matrix about the $i\text{-axis}$ of angle $2\theta$ in $\mathbb{R}^4$.
+It also happens to map cleanly as a rotation about the $i\text{-axis}$ in $\mathbb{R}^3$ if you take $d_x$ to be $0$ and $v_x$ to be the coordinates of a vector in $\mathbb{R}^3$.
+**** $f_l(x)$
+We need to find
+$f_l(1)$, $f_l(i)$, $f_l(j)$, $f_l(k)$,
+then form
+$f_l(x) = d_x f_l(1) + a_x f_l(i) + b_x f_l(j) + c_x f_l(k)$
+
+Finding $f_l(1)$:
+\begin{align*}
+f_l(1)
+&=
+(d + ai)(1) \\
+&=
+d + ai
+\end{align*}
+
+Finding $f_l(i)$:
+\begin{align*}
+f_l(i)
+&=
+(d + ai)i \\
+&=
+di + ai^2
+&=
+-a + di
+\end{align*}
+
+Finding $f_l(j)$:
+\begin{align*}
+f_l(j)
+&=
+(d + ai)j \\
+&=
+dj + aij \\
+&=
+dj + ak
+\end{align*}
+
+Finding $f_l(k)$:
+\begin{align*}
+f_l(k)
+&=
+(d + ai)k \\
+&=
+dk + aik \\
+&=
+-aj + dk
+\end{align*}
+
+The matrix representation of $f_l$ is then:
+\begin{align*}
+A_{f_l}
+&=
+\begin{bmatrix}
+d & -a & 0 &  0 \\
+a &  d & 0 &  0 \\
+0 &  0 & d & -a \\
+0 &  0 & a &  d
+\end{bmatrix}
+\end{align*}
+
+**** $f_r(x)$
+We need to find
+$f_r(1)$, $f_r(i)$, $f_r(j)$, $f_r(k)$,
+then form
+$f_r(x) = d_x f_r(1) + a_x f_r(i) + b_x f_r(j) + c_x f_r(k)$
+
+Finding $f_r(1)$:
+\begin{align*}
+f_r(1)
+&=
+(1)(d + ai)^{-1} \\
+&=
+\frac{(d + ai)^*}{d^2 + a^2} \\
+&=
+\frac{
+    d - ai
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d
+}{
+    d^2 + a^2
+}
++
+\frac{
+    -a
+}{
+    d^2 + a^2
+} i
+\end{align*}
+
+Finding $f_r(i)$:
+\begin{align*}
+f_r(i)
+&=
+i(d + ai)^{-1} \\
+&=
+i\frac{(d + ai)^*}{d^2 + a^2} \\
+&=
+i
+\frac{
+    d - ai
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    di - ai^2
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    a
+}{
+    d^2 + a^2
+}
++
+\frac{
+    d
+}{
+    d^2 + a^2
+} i
+\end{align*}
+
+Finding $f_r(j)$:
+\begin{align*}
+f_r(j)
+&=
+j(d + ai)^{-1} \\
+&=
+j\frac{(d + ai)^*}{d^2 + a^2} \\
+&=
+j
+\frac{
+    d - ai
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    dj - aji
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    d
+}{
+    d^2 + a^2
+} j
++
+\frac{
+    a
+}{
+    d^2 + a^2
+} k \\
+\end{align*}
+
+Finding $f_r(k)$:
+\begin{align*}
+f_r(k)
+&=
+k(d + ai)^{-1} \\
+&=
+k\frac{(d + ai)^*}{d^2 + a^2} \\
+&=
+k
+\frac{
+    d - ai
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    dk - aki
+}{
+    d^2 + a^2
+} \\
+&=
+\frac{
+    -a
+}{
+    d^2 + a^2
+} j
++
+\frac{
+    d
+}{
+    d^2 + a^2
+} k
+\end{align*}
+
+The matrix representation of $f_r$ is then:
+\begin{align*}
+A_{f_r}
+&=
+\frac{1}{d^2 + a^2}
+\begin{bmatrix}
+     d & a & 0 &  0 \\
+    -a & d & 0 &  0 \\
+     0 & 0 & d & -a \\
+     0 & 0 & a &  d
+\end{bmatrix}
+\end{align*}
+
+**** Geometric Interpretation of $A_{f_l}$ and $A_{f_r}$
+If we let
+\begin{align*}
+\cos{\theta}
+&=
+\frac{d}{\sqrt{d^2 + a^2}}
+&
+\sin{\theta}
+&=
+\frac{a}{\sqrt{d^2 + a^2}}
+\end{align*}
+
+Then we can substitute into $A_{f_l}$ and $A_{f_r}$:
+\begin{align*}
+A_{f_l}
+&=
+\sqrt{d^2 + a^2}
+\begin{bmatrix}
+\cos{\theta} & -\sin{\theta} & 0            & 0 \\
+\sin{\theta} &  \cos{\theta} & 0            & 0 \\
+0           &   0            & \cos{\theta} & -\sin{\theta} \\
+0           &   0            & \sin{\theta} &  \cos{\theta} \\
+\end{bmatrix}
+&
+A_{f_r}
+&=
+\frac{1}{\sqrt{d^2 + a^2}}
+\begin{bmatrix}
+ \cos{\theta} & \sin{\theta} & 0            & 0 \\
+-\sin{\theta} & \cos{\theta} & 0            & 0 \\
+ 0            &   0          & \cos{\theta} & -\sin{\theta} \\
+ 0            &   0          & \sin{\theta} &  \cos{\theta} \\
+\end{bmatrix}
+\end{align*}
+
+Using the trig identities, $\cos{-\theta} = \cos{\theta}, \sin{-\theta} = -\sin{\theta}$:
+
+\begin{align*}
+A_{f_r}
+&=
+\frac{1}{\sqrt{d^2 + a^2}}
+\begin{bmatrix}
+\cos{-\theta} & -\sin{-\theta} & 0            & 0 \\
+\sin{-\theta} &  \cos{-\theta} & 0            & 0 \\
+0             &   0            & \cos{\theta} & -\sin{\theta} \\
+0             &   0            & \sin{\theta} &  \cos{\theta} \\
+\end{bmatrix}
 \end{align*}
 
 
+We can see that $A_{f_l}$ scales a quaternion by $\sqrt{d^2 + a^2}$, simultaneously rotates the $1\text{-}i$ and $j\text{-}k$ planes by $\theta$, while $A_{f_r}$ scales by $\frac{1}{\sqrt{d^2 + a^2}}$ and rotates the $1\text{-}i$ plane by $-\theta$ and the $j\text{-}k$ plane by $\theta$.
+
+Intuitively this makes sense, we expect that when multiplied together these matrices produce a pure rotation around the $i\text{-axis}$, this is shown by:
+- the scaling factors multiply to $1$
+- the rotation in the $1\text{-}i$ plane (i.e. the plane parallel to $i$) undergoes zero rotation (rotates $\theta$ in one direction, then $\theta$ back in the other direction)
+- the rotation in the $j\text{-}k$ plane (i.e. the plane normal to $i$) goes through a rotation of $\theta + \theta = 2\theta$
