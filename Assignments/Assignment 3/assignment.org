@@ -1,0 +1,436 @@
+#+TITLE: MECH 464 Homework Assignment 3
+#+AUTHOR: Jasper Chan - 37467164 @@latex:\\@@ jasperchan515@gmail.com
+
+#+OPTIONS: toc:nil H:5 num:t
+
+
+#+LATEX_HEADER: \definecolor{bg}{rgb}{0.95,0.95,0.95}
+#+LATEX_HEADER: \setminted{frame=single,bgcolor=bg,samepage=true}
+#+LATEX_HEADER: \setlength{\parindent}{0pt}
+#+LATEX_HEADER: \sisetup{per-mode=fraction}
+#+LATEX_HEADER: \usepackage[shellescape]{gmp}
+#+LATEX_HEADER: \usepackage{gauss}
+#+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{svg}
+#+LATEX_HEADER: \usepackage{cancel}
+#+LATEX_HEADER: \usepackage{amssymb}
+#+LATEX_HEADER: \usepackage{accents}
+#+LATEX_HEADER: \usepackage{titlesec}
+#+LATEX_HEADER: \usepackage{mathtools, nccmath}
+#+LATEX_HEADER: \newcommand{\Lwrap}[1]{\left\{#1\right\}}
+#+LATEX_HEADER: \newcommand{\Lagr}[1]{\mathcal{L}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Lagri}[1]{\mathcal{L}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztrans}[1]{\mathcal{Z}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztransi}[1]{\mathcal{Z}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\ZOH}[1]{\text{ZOH}\left(#1\right)}
+#+LATEX_HEADER: \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+#+LATEX_HEADER: \makeatletter \AtBeginEnvironment{minted}{\dontdofcolorbox} \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}} \makeatother
+#+LATEX_HEADER: \titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+#+LATEX_HEADER: \titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{0.5em}
+#+LATEX_HEADER: \setcounter{secnumdepth}{5}
+#+LATEX_HEADER: \newcommand\munderbar[1]{\underaccent{\bar}{#1}}
+#+LATEX_HEADER: \newcommand\dmunderbar[1]{\munderbar{\munderbar{#1}}}
+#+LATEX_HEADER: \newcommand\mundertilde[1]{\underaccent{\tilde}{#1}}
+#+LATEX_HEADER: \newcommand{\norm}[1]{\| #1 \|}
+#+LATEX_HEADER: \newcommand*\phantomrel[1]{\mathrel{\phantom{#1}}}% My preferred typesetting
+
+* Exercise 1
+Consider the manipulator below.
+Assign joint variables in a manner consistent with the axes shown
+(positive angle by right hand rule),
+and coordinate systems $\{\mundertilde{o}_i, \munderbar{C}_i \}$,
+to all links, using the Denavit-Hartenberg convention.
+Complete the table of Denavit Hartenberg parameters.
+Write, as a function of 
+${^{i-1}T_i}, i = 0, ..., 6$,
+the coordinate transformation relating coordinates ${^6x}$ in the gripper frame with the coordinates ${^0x}$ in the base frame.
+You do not need to fill in the homogeneous matrices.
+
+#+CAPTION: Cylindrical robot.
+#+NAME: fig:fig1
+#+ATTR_LATEX: :placement [H] :width 0.6\textwidth
+[[file:fig1.png]]
+
+** Solution
+
+Drawing the coordinate systems for each joint on the figure:
+
+#+CAPTION: Cylindrical robot with coordinate systems annotated.
+#+NAME: fig:fig1_annotated
+#+ATTR_LATEX: :placement [H] :width 0.6\textwidth
+[[file:hand_drawing_ex1.pdf]]
+
+#+NAME: tbl:table_ex1
+#+CAPTION: DH Parameters for cylindrical robot
+#+ATTR_LATEX: :placement [H] :align c|c|c|c|c
+| DH Parameter          | $\theta_i$           | $d_i$         | $a_i$ | $\alpha_i$ |
+|-----------------------+----------------------+---------------+-------+------------|
+| \color{red}  Link 1   | 0                    | $(d_1)$       |     0 | 0          |
+| \color{blue} Link 2   | $(\theta_2)$         | 0             |     0 | $-\pi/2$   |
+| \color{green} Link 3  | 0                    | $l_3 + (d_3)$ |     0 | $\pi/2$    |
+| \color{purple} Link 4 | $\pi/2 + (\theta_4)$ | 0             |     0 | $\pi/2$    |
+| \color{orange} Link 5 | $\pi/2 + (\theta_5)$ | 0             |     0 | $\pi/2$    |
+| \color{black} Link 6  | $\pi/2 + (\theta_6)$ | $l_6$         |     0 | 0          |
+
+The transformation matrix from DH parameters is:
+\begin{align*}
+{^{i - 1}T_{i}}
+&=
+\underbrace{
+    \underbrace{
+        \begin{bmatrix}
+            e^{\theta_i k \times} & 0 \\
+            0^T                   & 1
+        \end{bmatrix}
+    }_{\text{angle}}
+    \underbrace{
+        \begin{bmatrix}
+            I   & d_i k \\
+            0^T & 1
+        \end{bmatrix}
+    }_{\text{offset}}
+}_{\text{degree of freedom}}
+\underbrace{
+    \underbrace{
+        \begin{bmatrix}
+            I   & a_i i \\
+            0^T & 1
+        \end{bmatrix}
+    }_{\text{length}}
+    \underbrace{
+        \begin{bmatrix}
+            e^{\alpha_i i \times} & 0 \\
+            0^T                   & 1
+        \end{bmatrix}
+    }_{\text{twist}}
+}_{\text{link parameter}}
+\\
+&=
+\underbrace{
+    \begin{bmatrix}
+        e^{\theta_i k \times} & e^{\theta_i k \times} d_i k \\
+        0^T                   & 1
+    \end{bmatrix}
+}_{\text{degree of freedom}}
+\underbrace{
+    \begin{bmatrix}
+        e^{\alpha_i i \times} & a_i i \\
+        0^T                   & 1
+    \end{bmatrix}
+}_{\text{link parameter}}
+\\
+&=
+\begin{bmatrix}
+    e^{\theta_i k \times} e^{\alpha_i i \times} & e^{\theta_i k \times} a_i i + e^{\theta_i k \times} d_i k \\
+    0^T                                         & 1
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+    e^{\theta_i k \times} e^{\alpha_i i \times} & e^{\theta_i k \times} (a_i i + d_i k) \\
+    0^T                                         & 1
+\end{bmatrix}
+\end{align*}
+
+Writing out the coordinate transform:
+\begin{align*}
+\begin{bmatrix}
+    {^0x} \\ 1
+\end{bmatrix}
+&=
+{^0T_6(q)}
+\begin{bmatrix}
+    {^6x} \\ 1
+\end{bmatrix}
+\\
+&=
+{^0T_1(q_1)}
+{^1T_2(q_2)}
+{^2T_3(q_3)}
+{^3T_4(q_4)}
+{^4T_5(q_5)}
+{^5T_6(q_6)}
+\begin{bmatrix}
+    {^6x} \\ 1
+\end{bmatrix}
+\\
+&=
+{^0T_1(d_1)}
+{^1T_2(\theta_2)}
+{^2T_3(d_3)}
+{^3T_4(\theta_4)}
+{^4T_5(\theta_5)}
+{^5T_6(\theta_6)}
+\begin{bmatrix}
+    {^6x} \\ 1
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+    I   & d_1 k \\
+    0^T & 1
+\end{bmatrix}
+\begin{bmatrix}
+    e^{\theta_2 k \times} e^{-\pi/2 i \times} & 0 \\
+    0^T                                       & 1
+\end{bmatrix}
+\begin{bmatrix}
+    e^{\pi/2 i \times} & (l_3 + d_3) k \\
+    0^T                & 1
+\end{bmatrix}
+\begin{bmatrix}
+    e^{(\pi/2 + \theta_4) k \times} e^{\pi/2 i \times} & 0 \\
+    0^T                & 1
+\end{bmatrix}
+\\
+&\phantomrel{=}
+\begin{bmatrix}
+    e^{(\pi/2 + \theta_5) k \times} e^{\pi/2 i \times} & 0 \\
+    0^T                & 1
+\end{bmatrix}
+\begin{bmatrix}
+    e^{(\pi/2 + \theta_6) k \times} & e^{(\pi/2 + \theta_6) k \times} l_6 k \\
+    0^T                & 1
+\end{bmatrix}
+\begin{bmatrix}
+    {^6x} \\ 1
+\end{bmatrix}
+\end{align*}
+
+
+* Exercise 2
+The Puma 560 shown in Figure [[fig:fig2]] has a reach of approximately $\SI{0.92}{\meter}$, and a payload capacity of $\SI{2.3}{\kilo\gram}$.
+It was widely used for medium-to-lightweight assembly, welding, materials handling, packaging and inspection applications.
+Using the schematic of Figure [[fig:fig3]], do the following:
+
+#+CAPTION: Photo of a 500 series Puma robot.
+#+NAME: fig:fig2
+#+ATTR_LATEX: :placement [H] :width 0.6\textwidth
+[[file:fig2.png]]
+
+#+CAPTION: The Puma 560 robot schematic (not to scale).
+#+NAME: fig:fig3
+#+ATTR_LATEX: :placement [H]
+[[file:fig3.png]]
+
+** Question 1
+Directly on the schematic, assign coordinate frames by means of the Denavit Hartenberg convention.
+Assume $\munderbar{C}_0$ and $\munderbar{C}_6$ are as illustrated in the "home" position.
+Fill in Table [[tbl:table1]] the values of the DH-parameters.
+For each joint, consider the positive rotation to be in the /right-handed sense/
+(NB: These are different from what is in the notes).
+
+*** Solution
+
+Drawing the coordinate systems for each joint on the figure:
+
+#+CAPTION: The Puma 560 robot schematic (not to scale) with coordinate systems annotated.
+#+NAME: fig:fig3_annotated
+#+ATTR_LATEX: :placement [H]
+[[file:hand_drawing_ex2.pdf]]
+
+#+NAME: tbl:table1
+#+CAPTION: DH Parameters for the Puma 560
+#+ATTR_LATEX: :placement [H] :align c|c|c|c|c
+| DH Parameter          | $\theta_i$ (deg)  | $d_i$ (mm) | $a_i$ (mm) | $\alpha_i$ (deg) |
+|-----------------------+-------------------+------------+------------+------------------|
+| \color{red}  Link 1   | $(\theta_1)$      |          0 |          0 |              -90 |
+| \color{blue} Link 2   | $(\theta_2$)      |          0 |        430 |                0 |
+| \color{green} Link 3  | $90 - (\theta_3)$ |      149.1 |       20.3 |               90 |
+| \color{purple} Link 4 | $(\theta_4)$      |        435 |          0 |               90 |
+| \color{orange} Link 5 | $(\theta_5)$      |          0 |          0 |               90 |
+| \color{black} Link 6  | $(\theta_6)$      |         60 |          0 |                0 |
+
+** Question 2
+Compose a chain of transformations that will give you the relationship between the base frame,
+$\{ \mundertilde{o}_0, \munderbar{C}_0 \}$,
+and the end-effector frame
+$\{ \mundertilde{o}_6, \munderbar{C}_6 \}$.
+Use the same notation we have used for the Stanford manipulator (slides or p.7 Forward Kinematics notes).
+
+*** Solution
+\begin{align*}
+\begin{bmatrix}
+    \munderbar{C}_6 & \mundertilde{o}_6 \\
+    0^T             & 1
+\end{bmatrix}
+&=
+\begin{bmatrix}
+    \munderbar{C}_0 & \mundertilde{o}_0 \\
+    0^T             & 1
+\end{bmatrix}
+{^0T_6(
+    \theta_1,
+    \theta_2,
+    \theta_3,
+    \theta_4,
+    \theta_5,
+    \theta_6
+)}
+\\
+&=
+\begin{bmatrix}
+    \munderbar{C}_0 & \mundertilde{o}_0 \\
+    0^T             & 1
+\end{bmatrix}
+{^0T_1(\theta_1)}
+{^1T_2(\theta_2)}
+{^2T_3(\theta_3)}
+{^3T_4(\theta_4)}
+{^4T_5(\theta_5)}
+{^5T_6(\theta_6)}
+\\
+&=
+\begin{bmatrix}
+    \munderbar{C}_0 & \mundertilde{o}_0 \\
+    0^T             & 1
+\end{bmatrix}
+\begin{bmatrix}
+    e^{\theta_1 k \times} e^{-\pi/2 i \times} & 0 \\
+    0^T                                       & 1
+\end{bmatrix}
+\begin{bmatrix}
+    e^{\theta_2 k \times} & e^{\theta_2 k \times} 430 i \\
+    0^T                   & 1
+\end{bmatrix}
+\begin{bmatrix}
+    e^{\theta_3 k \times} e^{\pi/2 i \times} & e^{\theta_3 k \times} (20.3 i + 149.1 k) \\
+    0^T                                      & 1
+\end{bmatrix}
+\\
+&\phantomrel{=}
+\begin{bmatrix}
+    e^{\theta_4 k \times} e^{\pi/2 i \times} & e^{\theta_4 k \times} 435 k \\
+    0^T                                      & 1
+\end{bmatrix}
+\begin{bmatrix}
+    e^{\theta_5 k \times} e^{\pi/2 i \times} & 0 \\
+    0^T                                      & 1
+\end{bmatrix}
+\begin{bmatrix}
+    e^{\theta_6 k \times} & e^{\theta_6 k \times} 60 k \\
+    0^T                   & 1
+\end{bmatrix}
+\end{align*}
+
+
+* Exercise 3
+** Question 1
+Find the velocity of a point $\mundertilde{y}$ with coordinates
+$y(t) = d(t) + Q(t)x(t)$,
+where $Q(t)$ is a rotation matrix,
+as a function of $\dot{d}$, $\dot{x}$ and $\dot{Q} = \omega \times Q$.
+Provide a physical interpretation for each of the terms.
+*** Solution
+\begin{align*}
+y &= d + Qx \\
+\frac{d}{dt}y
+&=
+\frac{d}{dt} (d + Qx) \\
+\dot{y}
+&=
+\dot{d} + \frac{d}{dt}Qx \\
+&=
+\dot{d} + \dot{Q}x + Q\dot{x} \\
+&=
+\dot{d} + (\omega \times Q)x + Q\dot{x} \\
+\end{align*}
+
+$\dot{d}$ can be thought of as a direct translational velocity.
+This can be seen by setting $\dot{Q} = \dot{x} = 0$, leaving $\dot{y} = \dot{d}$
+
+$(\omega \times Q)x$ is the velocity vector from rotating an "arm" $x$ with angular velocity $\omega$.
+
+$Q\dot{x}$ is the velocity vector of the movement of the arm itself.
+While $\dot{x}$ could technically change orientations, it may make sense to model rotations of the arm with $Q$, leaving $x/\norm{x}$ in a fixed direction.
+In this case, only $\norm{x}$ (length of the "arm") would change.
+
+** Question 2
+Find the acceleration of a point with coordinates
+$y(t) = d(t) + Q(t)x(t)$,
+where $Q(t)$ is a rotation matrix.
+*** Solution
+
+\begin{align*}
+\dot{y}
+&=
+\dot{d} + (\omega \times Q)x + Q\dot{x} \\
+\frac{d}{dt} \dot{y}
+&=
+\frac{d}{dt}
+\left(
+    \dot{d} + (\omega \times Q)x + Q\dot{x}
+\right) \\
+\ddot{y}
+&=
+\ddot{d} 
++ \frac{d}{dt}(\omega \times Q)x 
++ \frac{d}{dt} Q\dot{x}
+\\
+&=
+\ddot{d} 
++ \left(
+    \left(
+        \dot{\omega} \times Q
+    \right)
+    + \left(
+        \omega \times \dot{Q}
+    \right)
+\right)x
++ (\omega \times Q) \dot{x}
++ \frac{d}{dt} Q\dot{x}
+\\
+&=
+\ddot{d} 
++ \left(
+    \left(
+        \dot{\omega} \times Q
+    \right)
+    + \left(
+        \omega \times \dot{Q}
+    \right)
+\right)x
++ (\omega \times Q) \dot{x}
++ \dot{Q}x
++ Q\dot{x}
+&=
+\ddot{d} 
++ \left(
+    \left(
+        \dot{\omega} \times Q
+    \right)
+    + \left(
+        \omega \times (\omega \times Q)
+    \right)
+\right)x
++ (\omega \times Q) \dot{x}
++ \dot{Q}x
++ Q\dot{x}
+\end{align*}
+
+* Exercise 4
+Consider an oblique spherical wrist, implementing a sequence of three rotations from frame
+$\munderbar{C}_0 = \begin{bmatrix} \munderbar{i}_0 & \munderbar{j}_0 & \munderbar{k}_0 \end{bmatrix}$
+to $\munderbar{C}_1$,
+$\munderbar{C}_1 = \begin{bmatrix} \munderbar{i}_1 & \munderbar{j}_1 & \munderbar{k}_1 \end{bmatrix}$
+to $\munderbar{C}_2$, and
+$\munderbar{C}_2 = \begin{bmatrix} \munderbar{i}_2 & \munderbar{j}_2 & \munderbar{k}_2 \end{bmatrix}$
+to $\munderbar{C}_3$.
+The first rotation is about
+$\munderbar{k}_0$
+by an angle $\theta_1$,
+the second about
+$\frac{1}{\sqrt{2}}(\munderbar{j}_1 - \munderbar{k}_1)$
+by an angle $\theta_2$
+and the third one about $\munderbar{k}_2$
+by an angle $\theta_3$.
+
+What is the angular velocity of $\munderbar{C}_3$ with respect to $\munderbar{C}_0$?
+Find its coordinates with respect to
+$\munderbar{C}_0$,
+$\munderbar{C}_1$,
+$\munderbar{C}_2$,
+and
+$\munderbar{C}_3$.
+
+** Solution
