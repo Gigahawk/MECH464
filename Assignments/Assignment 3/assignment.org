@@ -393,6 +393,7 @@ where $Q(t)$ is a rotation matrix.
 + (\omega \times Q) \dot{x}
 + \dot{Q}x
 + Q\dot{x}
+\\
 &=
 \ddot{d} 
 + \left(
@@ -404,7 +405,7 @@ where $Q(t)$ is a rotation matrix.
     \right)
 \right)x
 + (\omega \times Q) \dot{x}
-+ \dot{Q}x
++ (\omega \times Q) x
 + Q\dot{x}
 \end{align*}
 
@@ -434,3 +435,125 @@ and
 $\munderbar{C}_3$.
 
 ** Solution
+
+The coordinates for the three rotations are:
+\begin{align*}
+{^0\omega_{1,0}}
+&=
+\dot{\theta}_1 k
+&
+{^1\omega_{2,1}}
+&=
+\dot{\theta}_2 \frac{1}{\sqrt{2}} (j - k)
+&
+{^2\omega_{3,2}}
+&=
+\dot{\theta}_3 k
+\end{align*}
+
+The angular velocity of $\munderbar{C}_3$ with respect to $\munderbar{C}_0$ is then:
+\begin{align*}
+\munderbar{\omega}_{3,0}
+&=
+\munderbar{C}_0
+{^0\omega_{1,0}}
++
+\munderbar{C}_1
+{^1\omega_{2,1}}
++
+\munderbar{C}_2
+{^2\omega_{3,2}}
+\end{align*}
+
+To get coordinates in each frame, let's first write out the coordinate transforms ${^{i-1}C_i}$ between each frame:
+\begin{align*}
+\munderbar{C}_1
+&=
+\munderbar{C}_0
+{^0C_1}
+&
+\munderbar{C}_2
+&=
+\munderbar{C}_1
+{^1C_2}
+&
+\munderbar{C}_3
+&=
+\munderbar{C}_2
+{^2C_3}
+\\
+&=
+\munderbar{C}_0
+e^{\theta_1 k \times}
+&
+&=
+\munderbar{C}_1
+e^{\theta_2 \left(\frac{1}{\sqrt{2}}(j - k)\right) \times}
+&
+&=
+\munderbar{C}_2
+e^{\theta_3 k \times}
+\end{align*}
+
+Note that the transforms ${^iC_{i - 1}}$ are just the inverse of the above transforms (or a rotation of $-\theta_i$ about the same axis).
+Intuitively this is because the coordinates of the axis of rotation are unchanged by the rotation.
+
+\begin{align*}
+\munderbar{C}_0
+&=
+\munderbar{C}_1
+{^1C_0}
+&
+\munderbar{C}_1
+&=
+\munderbar{C}_2
+{^2C_1}
+&
+\munderbar{C}_2
+&=
+\munderbar{C}_3
+{^3C_2}
+\\
+&=
+\munderbar{C}_1
+e^{-\theta_1 k \times}
+&
+&=
+\munderbar{C}_2
+e^{-\theta_2 \left(\frac{1}{\sqrt{2}}(j - k)\right) \times}
+&
+&=
+\munderbar{C}_3
+e^{-\theta_3 k \times}
+\end{align*}
+
+
+In each frame $\munderbar{C}_i$, the angular velocity coordinates are then:
+\begin{align*}
+{^0\omega_{3,0}}
+&=
+{^0\omega_{1,0}}
++
+{^0C_1}
+{^1\omega_{2,1}}
++
+{^0C_1}
+{^1C_2}
+{^2\omega_{3,2}}
+\\
+{^1\omega_{3,0}}
+&=
+{^1C_0}
+{^0\omega_{3,0}}
+\\
+{^2\omega_{3,0}}
+&=
+{^2C_1}
+{^1\omega_{3,0}}
+\\
+{^3\omega_{3,0}}
+&=
+{^3C_2}
+{^2\omega_{3,0}}
+\end{align*}
+
