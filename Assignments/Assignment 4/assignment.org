@@ -1,0 +1,765 @@
+#+TITLE: MECH 464 Homework Assignment 4
+#+AUTHOR: Jasper Chan - 37467164 @@latex:\\@@ jasperchan515@gmail.com
+
+#+OPTIONS: toc:nil H:5 num:t
+
+
+#+LATEX_HEADER: \definecolor{bg}{rgb}{0.95,0.95,0.95}
+#+LATEX_HEADER: \setminted{frame=single,bgcolor=bg,samepage=true}
+#+LATEX_HEADER: \setlength{\parindent}{0pt}
+#+LATEX_HEADER: \sisetup{per-mode=fraction}
+#+LATEX_HEADER: \usepackage[shellescape]{gmp}
+#+LATEX_HEADER: \usepackage{gauss}
+#+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{svg}
+#+LATEX_HEADER: \usepackage{cancel}
+#+LATEX_HEADER: \usepackage{amssymb}
+#+LATEX_HEADER: \usepackage{accents}
+#+LATEX_HEADER: \usepackage{titlesec}
+#+LATEX_HEADER: \usepackage{mathtools, nccmath}
+#+LATEX_HEADER: \newcommand{\Lwrap}[1]{\left\{#1\right\}}
+#+LATEX_HEADER: \newcommand{\Lagr}[1]{\mathcal{L}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Lagri}[1]{\mathcal{L}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztrans}[1]{\mathcal{Z}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztransi}[1]{\mathcal{Z}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\ZOH}[1]{\text{ZOH}\left(#1\right)}
+#+LATEX_HEADER: \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+#+LATEX_HEADER: \makeatletter \AtBeginEnvironment{minted}{\dontdofcolorbox} \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}} \makeatother
+#+LATEX_HEADER: \titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+#+LATEX_HEADER: \titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{0.5em}
+#+LATEX_HEADER: \setcounter{secnumdepth}{5}
+#+LATEX_HEADER: \newcommand\munderbar[1]{\underaccent{\bar}{#1}}
+#+LATEX_HEADER: \newcommand\dmunderbar[1]{\munderbar{\munderbar{#1}}}
+#+LATEX_HEADER: \newcommand\mundertilde[1]{\underaccent{\tilde}{#1}}
+#+LATEX_HEADER: \newcommand{\norm}[1]{\| #1 \|}
+#+LATEX_HEADER: \newcommand*\phantomrel[1]{\mathrel{\phantom{#1}}}% My preferred typesetting
+#+LATEX_HEADER: \newcommand\scalemath[2]{\scalebox{#1}{\mbox{\ensuremath{\displaystyle #2}}}}
+
+Find the manipulator geometric Jacobian for the robots shown in Fig. [[fig:fig1]], [[fig:fig2]], [[fig:fig3]].
+For each case, find the robot singular configurations
+
+* Exercise 1
+
+#+CAPTION: SCARA robot with vertical axis in the base.
+#+NAME: fig:fig1
+#+ATTR_LATEX: :placement [H]
+[[file:fig1.png]]
+
+** Solution
+
+Drawing and assigning coordinate systems to each joint:
+#+CAPTION: SCARA robot with vertical axis in the base with coordinate systems annotated.
+#+NAME: fig:fig1_annotated
+#+ATTR_LATEX: :placement [H]
+[[file:hand_drawing_ex1.pdf]]
+
+The Jacobian $\munderbar{J}_n(q)$ relates the joint rates with the velocity of the $n\text{-th}$ frame (usually the griper):
+\begin{align*}
+\begin{bmatrix}
+    \dot{\mundertilde{o}}_n \\ \munderbar{\omega}_n
+\end{bmatrix}
+&=
+\munderbar{J}_n (q) \dot{q}
+\\
+&=
+\left[
+    \munderbar{J}_{n, 0}
+    \cdots
+    \munderbar{J}_{n, n - 1}
+\right](q)
+\dot{q}
+\end{align*}
+
+Where:
+\begin{align*}
+\munderbar{J}_{n, i - 1}
+&=
+\left\{
+    \begin{array}{cl}
+        \begin{bmatrix}
+            \munderbar{k}_{i - 1} \times
+            \left(
+                \mundertilde{o}_n
+                - \mundertilde{o}_{i - 1}
+            \right) \\
+            \munderbar{k}_{i - 1}
+        \end{bmatrix}
+        &
+        \text{if joint $i$ is revolute}
+        \\
+        \begin{bmatrix}
+            \munderbar{k}_{i - 1} \\
+            0
+        \end{bmatrix}
+        &
+        \text{if joint $i$ is prismatic}
+    \end{array}
+\right\}
+\end{align*}
+
+The Jacobian for the robot end effector shown in Figure [[fig:fig1_annotated]] is then:
+\begin{align*}
+\munderbar{J}_6(q)
+&=
+\begin{bmatrix}
+    \munderbar{J}_{6, 0} &
+    \munderbar{J}_{6, 1} &
+    \munderbar{J}_{6, 2} &
+    \munderbar{J}_{6, 3} &
+    \munderbar{J}_{6, 4} &
+    \munderbar{J}_{6, 5}
+\end{bmatrix}(q)
+\\
+&=
+\begin{bmatrix}
+    \munderbar{k}_0 &
+    \munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{1}
+    \right) &
+    \munderbar{k}_{2} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{2}
+    \right) &
+    \munderbar{k}_{3} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{4} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{4}
+    \right) &
+    \munderbar{k}_{5} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{5}
+    \right)
+    \\
+    0 &
+    \munderbar{k}_{1} &
+    \munderbar{k}_{2} &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\end{align*}
+
+We note that the coordinate systems for the last 3 joints have been placed at the center of the spherical wrist, therefore $\mundertilde{o}_3 = \mundertilde{o}_4 = \mundertilde{o}_5$.
+We also note that the first 4 joints are always parallel regardless of joint configuration, therefore $\munderbar{k}_0 = \munderbar{k}_1 = \munderbar{k}_2 = \munderbar{k}_3$
+We can then rewrite $\munderbar{J}_6(q)$ as:
+\begin{align*}
+\munderbar{J}_6(q)
+&=
+\begin{bmatrix}
+    \munderbar{k}_0 &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{1}
+    \right) &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{2}
+    \right) &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{4} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{5} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right)
+    \\
+    0 &
+    \munderbar{k}_{0} &
+    \munderbar{k}_{0} &
+    \munderbar{k}_{0} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\end{align*}
+
+To find singular configurations, we can apply the elementary row operation:
+\begin{align*}
+\munderbar{J}_6(q)
+&\sim
+\begin{gmatrix}[b]
+    \munderbar{k}_0 &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{1}
+    \right) &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{2}
+    \right) &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{4} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{5} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right)
+    \\
+    0 &
+    \munderbar{k}_{0} &
+    \munderbar{k}_{0} &
+    \munderbar{k}_{0} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+    \rowops
+        \add[\left(\mundertilde{o}_6 - \mundertilde{o}_3\right) \times]{1}{0}
+\end{gmatrix}(q)
+\\
+&\sim
+\begin{bmatrix}
+    \munderbar{k}_0 &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_3
+        - \mundertilde{o}_{1}
+    \right) &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_3
+        - \mundertilde{o}_{2}
+    \right) &
+    0 & 
+    0 & 
+    0 & 
+    \\
+    0 &
+    \munderbar{k}_{0} &
+    \munderbar{k}_{0} &
+    \munderbar{k}_{0} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\hspace{-3.6in}
+\underbrace{
+    \phantomrel{
+        \begin{array}{ccc}
+            \munderbar{k}_0 &
+            \munderbar{k}_{0} \times
+            \left(
+                \mundertilde{o}_3
+                - \mundertilde{o}_{1}
+            \right) &
+            \munderbar{k}_{0} \times
+            \left(
+                \mundertilde{o}_3
+                - \mundertilde{o}_{2}
+            \right)
+            \\
+            0 &
+            \munderbar{k}_{0} &
+            \munderbar{k}_{0} &
+        \end{array}
+    }
+}_{\text{arm singularities}}
+\hspace{-0.05in}
+\underbrace{
+    \phantomrel{
+        \begin{array}{ccc}
+            0 & 0 & 0
+            \\
+            \munderbar{k}_{0} &
+            \munderbar{k}_{4} &
+            \munderbar{k}_{5}
+        \end{array}
+    }
+}_{\text{wrist singularities}}
+\\
+&\sim
+\begin{bmatrix}
+    \munderbar{J}_{11} & 0 \\
+    \munderbar{J}_{21} & \munderbar{J}_{22}
+\end{bmatrix}
+\end{align*}
+
+This matrix loses rank (is singular) if either $\munderbar{J}_{11}$ or $\munderbar{J}_{22}$ loses rank.
+
+$\munderbar{J}_{22}$ is singular when
+$\munderbar{k}_0$,
+$\munderbar{k}_4$, and
+$\munderbar{k}_5$
+are coplanar.
+For a spherical wrist, this only happens when $\munderbar{k}_0 \parallel \munderbar{k}_5$, since $\munderbar{k}_4$ is perpendicular to the other two axes.
+The configuration shown in the figure is therefore singular, and so is every configuration where $\theta_5$ is an integer multiple of $\SI{180}{\degree}$ (assuming the figure shows the robot in the home position).
+
+
+$\munderbar{J}_{11}$ is singular when
+$\munderbar{k}_0$,
+$\munderbar{k}_0 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{1} \right)$, and
+$\munderbar{k}_0 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$
+are coplanar.
+
+Here, the arm is singular when $\left( \mundertilde{o}_3 - \mundertilde{o}_{1} \right) \parallel \left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$, since $\munderbar{k}_0$ will always be perpendicular to the other two axes.
+The configuration shown in the figure is therefore singular, and so is every configuration where $\theta_2$ is an integer multiple of $\SI{180}{\degree}$ (assuming the figure shows the robot in the home position).
+
+Note there is also a somewhat special case when $l_2 = l_3$ and therefore $\theta_3$ can place $\mundertilde{o}_3 = \mundertilde{o}_1$, leading to $\munderbar{k}_0 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{1} \right) = 0$, although in this case the arm is singular regardless of the link lengths due to the alignment of $\left( \mundertilde{o}_3 - \mundertilde{o}_{1} \right)$ and $\left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$
+* Exercise 2
+
+#+CAPTION: Anthropomorphic (PUMA without offsets).
+#+NAME: fig:fig2
+#+ATTR_LATEX: :placement [H]
+[[file:fig2.png]]
+
+** Solution
+
+Drawing and assigning coordinate systems to each joint:
+
+#+CAPTION: Anthropomorphic (PUMA without offsets) with coordinate systems annotated.
+#+NAME: fig:fig2_annotated
+#+ATTR_LATEX: :placement [H]
+[[file:hand_drawing_ex2.pdf]]
+
+The Jacobian for the robot end effector shown in Figure [[fig:fig2_annotated]] is:
+\begin{align*}
+\munderbar{J}_6(q)
+&=
+\begin{bmatrix}
+    \munderbar{J}_{6, 0} &
+    \munderbar{J}_{6, 1} &
+    \munderbar{J}_{6, 2} &
+    \munderbar{J}_{6, 3} &
+    \munderbar{J}_{6, 4} &
+    \munderbar{J}_{6, 5}
+\end{bmatrix}(q)
+\\
+&=
+\begin{bmatrix}
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{0}
+    \right) &
+    \munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{1}
+    \right) &
+    \munderbar{k}_{2} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{2}
+    \right) &
+    \munderbar{k}_{3} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{4} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{4}
+    \right) &
+    \munderbar{k}_{5} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{5}
+    \right)
+    \\
+    \munderbar{k}_{0} &
+    \munderbar{k}_{1} &
+    \munderbar{k}_{2} &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\end{align*}
+
+We note that:
+- the coordinate systems for the last 3 joints have been placed at the center of the spherical wrist, therefore $\mundertilde{o}_3 = \mundertilde{o}_4 = \mundertilde{o}_5$.
+- the coordinate systems for the first 2 joints have been placed at the same location, therefore $\mundertilde{o}_0 = \mundertilde{o}_1$.
+- the second and third joints are always parallel regardless of joint configuration, therefore $\munderbar{k}_1 = \munderbar{k}_2$
+
+We can then rewrite $\munderbar{J}_6(q)$ as:
+\begin{align*}
+\munderbar{J}_6(q)
+&=
+\begin{bmatrix}
+    \munderbar{J}_{6, 0} &
+    \munderbar{J}_{6, 1} &
+    \munderbar{J}_{6, 2} &
+    \munderbar{J}_{6, 3} &
+    \munderbar{J}_{6, 4} &
+    \munderbar{J}_{6, 5}
+\end{bmatrix}(q)
+\\
+&=
+\begin{bmatrix}
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{0}
+    \right) &
+    \munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{0}
+    \right) &
+    \munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{2}
+    \right) &
+    \munderbar{k}_{3} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{4} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{5} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right)
+    \\
+    \munderbar{k}_{0} &
+    \munderbar{k}_{1} &
+    \munderbar{k}_{1} &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\end{align*}
+
+To find singular configurations, we can apply the elementary row operation:
+\begin{align*}
+\munderbar{J}_6(q)
+&\sim
+\scalemath{0.85}{
+    \begin{gmatrix}[b]
+        \munderbar{k}_{0} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{0}
+        \right) &
+        \munderbar{k}_{1} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{0}
+        \right) &
+        \munderbar{k}_{1} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{2}
+        \right) &
+        \munderbar{k}_{3} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{3}
+        \right) &
+        \munderbar{k}_{4} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{3}
+        \right) &
+        \munderbar{k}_{5} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{3}
+        \right)
+        \\
+        \munderbar{k}_{0} &
+        \munderbar{k}_{1} &
+        \munderbar{k}_{1} &
+        \munderbar{k}_{3} &
+        \munderbar{k}_{4} &
+        \munderbar{k}_{5}
+        \rowops
+            \add[\left(\mundertilde{o}_6 - \mundertilde{o}_3\right) \times]{1}{0}
+    \end{gmatrix}(q)
+}
+\\
+&\sim
+\begin{bmatrix}
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_3
+        - \mundertilde{o}_{0}
+    \right) &
+    \munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_3
+        - \mundertilde{o}_{0}
+    \right) &
+    \munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_3
+        - \mundertilde{o}_{2}
+    \right) &
+    0 &
+    0 &
+    0 &
+    \\
+    \munderbar{k}_{0} &
+    \munderbar{k}_{1} &
+    \munderbar{k}_{1} &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\\
+&\sim
+\begin{bmatrix}
+    \munderbar{J}_{11} & 0 \\
+    \munderbar{J}_{21} & \munderbar{J}_{22}
+\end{bmatrix}
+\end{align*}
+
+This matrix loses rank (is singular) if either $\munderbar{J}_{11}$ or $\munderbar{J}_{22}$ loses rank.
+
+$\munderbar{J}_{22}$ is singular when
+$\munderbar{k}_3$,
+$\munderbar{k}_4$, and
+$\munderbar{k}_5$
+are coplanar.
+For a spherical wrist, this only happens when $\munderbar{k}_3 \parallel \munderbar{k}_5$, since $\munderbar{k}_4$ is perpendicular to the other two axes.
+The configuration shown in the figure is therefore singular, and so is every configuration where $\theta_5$ is an integer multiple of $\SI{180}{\degree}$ (assuming the figure shows the robot in the home position).
+
+
+$\munderbar{J}_{11}$ is singular when
+$\munderbar{k}_0 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{0} \right)$,
+$\munderbar{k}_1 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{0} \right)$, and
+$\munderbar{k}_1 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$
+are coplanar.
+Since $\munderbar{k}_0$ is always perpendicular to $\munderbar{k}_1$, the only case where this can happen is if $\left( \mundertilde{o}_3 - \mundertilde{o}_{0} \right) \parallel \left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$.
+This happens when $\theta_3 = \SI{90}{\degree} + m(\SI{180}{\degree}), m \in \mathbb{Z}$.
+Note that by only setting $\theta_3 = \SI{90}{\degree} + m(\SI{180}{\degree})$ (and leaving all other joints in the home position as shown in the figure), there is a special case where $\munderbar{k}_0 \parallel \left( \mundertilde{o}_3 - \mundertilde{o}_{0} \right)$, leading to 
+$\munderbar{k}_0 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{0} \right) = 0$, although of course in this case the arm is singular anyways due to
+$\left( \mundertilde{o}_3 - \mundertilde{o}_{0} \right) \parallel \left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$.
+
+
+* Exercise 3
+
+#+CAPTION: Cylindrical robot.
+#+NAME: fig:fig3
+#+ATTR_LATEX: :placement [H]
+[[file:fig3.png]]
+
+** Solution
+
+Drawing and assigning coordinate systems to each joint:
+
+#+CAPTION: Cylindrical robot with coordinate systems annotated.
+#+NAME: fig:fig3_annotated
+#+ATTR_LATEX: :placement [H]
+[[file:hand_drawing_ex3.pdf]]
+
+The Jacobian for the robot end effector shown in Figure [[fig:fig3_annotated]] is:
+\begin{align*}
+\munderbar{J}_6(q)
+&=
+\begin{bmatrix}
+    \munderbar{J}_{6, 0} &
+    \munderbar{J}_{6, 1} &
+    \munderbar{J}_{6, 2} &
+    \munderbar{J}_{6, 3} &
+    \munderbar{J}_{6, 4} &
+    \munderbar{J}_{6, 5}
+\end{bmatrix}(q)
+\\
+&=
+\begin{bmatrix}
+    \munderbar{k}_{0} &
+    \munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{1}
+    \right) &
+    \munderbar{k}_{2} &
+    \munderbar{k}_{3} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{4} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{4}
+    \right) &
+    \munderbar{k}_{5} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{5}
+    \right)
+    \\
+    0 &
+    \munderbar{k}_{1} &
+    0 &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\end{align*}
+
+We note that:
+- the coordinate systems for the last 3 joints have been placed at the center of the spherical wrist, therefore $\mundertilde{o}_3 = \mundertilde{o}_4 = \mundertilde{o}_5$.
+- the coordinate systems for the second and third joints[fn:originloc3] have been placed at the same location, therefore $\mundertilde{o}_1 = \mundertilde{o}_2$.
+- the first two joints are always parallel regardless of joint configuration, therefore $\munderbar{k}_0 = \munderbar{k}_1$
+
+[fn:originloc3] The first joint is also at the same location in the figure, but this is dependent on joint configuration; if the first prismatic joint extends, then the first two coordinate systems will no longer be in the same location.
+
+
+
+
+
+We can then rewrite $\munderbar{J}_6(q)$ as:
+\begin{align*}
+\munderbar{J}_6(q)
+&=
+\begin{bmatrix}
+    \munderbar{J}_{6, 0} &
+    \munderbar{J}_{6, 1} &
+    \munderbar{J}_{6, 2} &
+    \munderbar{J}_{6, 3} &
+    \munderbar{J}_{6, 4} &
+    \munderbar{J}_{6, 5}
+\end{bmatrix}(q)
+\\
+&=
+\begin{bmatrix}
+    \munderbar{k}_{0} &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{1}
+    \right) &
+    \munderbar{k}_{2} &
+    \munderbar{k}_{3} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{4} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{5} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right)
+    \\
+    0 &
+    \munderbar{k}_{1} &
+    0 &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\end{align*}
+
+To find singular configurations, we can apply the elementary row operation:
+\begin{align*}
+\munderbar{J}_6(q)
+&\sim
+\begin{gmatrix}[b]
+    \munderbar{k}_{0} &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{1}
+    \right) &
+    \munderbar{k}_{2} &
+    \munderbar{k}_{3} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{4} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{5} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right)
+    \\
+    0 &
+    \munderbar{k}_{1} &
+    0 &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+    \rowops
+        \add[\left(\mundertilde{o}_6 - \mundertilde{o}_3\right) \times]{1}{0}
+\end{gmatrix}(q)
+\\
+&\sim
+\begin{bmatrix}
+    \munderbar{k}_{0} &
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_3
+        - \mundertilde{o}_{1}
+    \right) &
+    \munderbar{k}_{2} &
+    0 &
+    0 &
+    0 &
+    \\
+    0 &
+    \munderbar{k}_{1} &
+    0 &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\\
+&\sim
+\begin{bmatrix}
+    \munderbar{J}_{11} & 0 \\
+    \munderbar{J}_{21} & \munderbar{J}_{22}
+\end{bmatrix}
+\end{align*}
+
+This matrix loses rank (is singular) if either $\munderbar{J}_{11}$ or $\munderbar{J}_{22}$ loses rank.
+
+$\munderbar{J}_{22}$ is singular when
+$\munderbar{k}_3$,
+$\munderbar{k}_4$, and
+$\munderbar{k}_5$
+are coplanar.
+For a spherical wrist, this only happens when $\munderbar{k}_3 \parallel \munderbar{k}_5$, since $\munderbar{k}_4$ is perpendicular to the other two axes.
+The wrist is singular for every configuration where $\theta_5 = \SI{90}{\degree} + m\SI{180}{\degree}, m \in \mathbb{Z}$ (assuming the figure shows the robot in the home position).
+
+$\munderbar{J}_{11}$ is singular when
+$\munderbar{k}_{0}$,
+$\munderbar{k}_{0} \times \left( \mundertilde{o}_3 - \mundertilde{o}_{1} \right)$, and
+$\munderbar{k}_{2}$
+are coplanar.
+However, there are no configurations where this happens, the three vectors are actually always orthogonal to each other.
+This makes sense, since the joints map one to one with cylindrical coordinates $(r, \theta, z)$.
+
