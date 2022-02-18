@@ -360,7 +360,11 @@ What is the coordinate representation of the composition of the two rotations
 $\munderbar{y} = \dmunderbar{R}\left(\munderbar{i}_0, \frac{\pi}{6}\right) \dmunderbar{Q}\left(\munderbar{k}_0, \frac{\pi}{2}\right)\munderbar{x}$
 in
 $\munderbar{C}_1$?
-*** Solution
+*** COMMENT Solution
+The following solution is incorrect because it only transforms the matrix ${^0R}{^0Q}$ into frame 1, it is not transforming the linear function.
+The result of the following solution is effectively the matrix representation of a function that takes coordinates in frame 0, applies the rotation, then returns the answer as coordinates in frame 1.
+
+
 Rewriting the rotated frame using the coordinate representation ${^0Q}$:
 \begin{align*}
 \munderbar{C}_1
@@ -414,6 +418,123 @@ The coordinate representation of the composite rotation in $\munderbar{C}_1$ is 
 \end{bmatrix}
 \end{align*}
 
+*** Solution
+
+Rewriting the rotated frame using the coordinate representation ${^0Q}$:
+\begin{align*}
+\munderbar{C}_1
+=
+\dmunderbar{Q}\left(\munderbar{k}_0, \frac{\pi}{2}\right)\munderbar{C}_0
+&=
+\munderbar{C}_0\underbrace{^0Q}_{^0C_1}
+\end{align*}
+
+Expressing the function with our existing coordinate representation:
+\begin{align*}
+\munderbar{y}
+&=
+\dmunderbar{R}\left(\munderbar{i}_0, \frac{\pi}{6}\right)
+\dmunderbar{Q}\left(\munderbar{k}_0, \frac{\pi}{2}\right)
+\munderbar{x}
+\\
+&=
+\dmunderbar{S}
+\munderbar{x}
+\\
+{^0y}
+&=
+{^0S}
+{^0x}
+\end{align*}
+
+Transforming the input and output of the function into frame 1:
+\begin{align*}
+{^0y}
+&=
+{^0S}
+{^0x}
+\\
+\underbrace{
+    {^1C_0}
+    {^0y}
+}_{{^1y}}
+&=
+{^1C_0}
+{^0S}
+{^0x}
+\\
+{^1y}
+&=
+{^1C_0}
+{^0S}
+\underbrace{
+    \left(
+        {^0C_1}
+        {^1x}
+    \right)
+}_{{^0x}}
+\\
+{^1y}
+&=
+\left({^0C_1}\right)^{-1}
+{^0S}
+{^0C_1}
+{^1x}
+\\
+{^1y}
+&=
+\left({^0Q}\right)^{-1}
+{^0S}
+{^0Q}
+{^1x}
+\\
+{^1y}
+&=
+\underbrace{
+    {^0Q^T}
+    {^0S}
+    {^0Q}
+}_{^1S}
+{^1x}
+\\
+{^1S}
+&=
+\begin{bmatrix}
+     0 & 1 & 0 \\
+    -1 & 0 & 0 \\
+     0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+    0                  & -1 &  0 \\
+    \frac{\sqrt{3}}{2} &  0 & -\frac{1}{2} \\
+    \frac{1}{2}        &  0 &  \frac{\sqrt{3}}{2}
+\end{bmatrix}
+\begin{bmatrix}
+    0 & -1 & 0 \\
+    1 &  0 & 0 \\
+    0 &  0 & 1
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+    \frac{\sqrt{3}}{2} & 0 & -\frac{1}{2} \\
+    0                  & 1 &  0 \\
+    \frac{1}{2}        & 0 &  \frac{\sqrt{3}}{2}
+\end{bmatrix}
+\begin{bmatrix}
+    0 & -1 & 0 \\
+    1 &  0 & 0 \\
+    0 &  0 & 1
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+    0 & -\frac{\sqrt{3}}{2} & -\frac{1}{2} \\
+    1 &  0                  &  0 \\
+    0 & -\frac{1}{2}        &  \frac{\sqrt{3}}{2}
+\end{bmatrix}
+\end{align*}
+
 * Exercise 3
 Write a Simulink model to integrate
 $\dot{Q} = \omega \times Q$,
@@ -437,7 +558,6 @@ simulink
 #+end_src
 
 #+RESULTS:
-: org_babel_eoe
 
 First let's define a skew helper function:
 #+begin_src matlab :exports code :tangle skew.m :eval never
