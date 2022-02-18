@@ -315,10 +315,8 @@ $\munderbar{k}_0$,
 $\munderbar{k}_0 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{1} \right)$, and
 $\munderbar{k}_0 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$
 are coplanar.
-
 Here, the arm is singular when $\left( \mundertilde{o}_3 - \mundertilde{o}_{1} \right) \parallel \left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$, since $\munderbar{k}_0$ will always be perpendicular to the other two axes.
 The configuration shown in the figure is therefore singular, and so is every configuration where $\theta_2$ is an integer multiple of $\SI{180}{\degree}$ (assuming the figure shows the robot in the home position).
-
 Note there is also a somewhat special case when $l_2 = l_3$ and therefore $\theta_3$ can place $\mundertilde{o}_3 = \mundertilde{o}_1$, leading to $\munderbar{k}_0 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{1} \right) = 0$, although in this case the arm is singular regardless of the link lengths due to the alignment of $\left( \mundertilde{o}_3 - \mundertilde{o}_{1} \right)$ and $\left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$
 * Exercise 2
 
