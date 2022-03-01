@@ -232,14 +232,14 @@ Drawing the coordinate systems for each joint on the figure:
 #+NAME: tbl:table1
 #+CAPTION: DH Parameters for the Puma 560
 #+ATTR_LATEX: :placement [H] :align c|c|c|c|c
-| DH Parameter          | $\theta_i$ (deg)  | $d_i$ (mm) | $a_i$ (mm) | $\alpha_i$ (deg) |
-|-----------------------+-------------------+------------+------------+------------------|
-| \color{red}  Link 1   | $(\theta_1)$      |          0 |          0 |              -90 |
-| \color{blue} Link 2   | $(\theta_2$)      |          0 |        430 |                0 |
-| \color{green} Link 3  | $90 - (\theta_3)$ |      149.1 |       20.3 |               90 |
-| \color{purple} Link 4 | $(\theta_4)$      |        435 |          0 |               90 |
-| \color{orange} Link 5 | $(\theta_5)$      |          0 |          0 |               90 |
-| \color{black} Link 6  | $(\theta_6)$      |         60 |          0 |                0 |
+| DH Parameter          | $\theta_i$ (deg)   | $d_i$ (mm) | $a_i$ (mm) | $\alpha_i$ (deg) |
+|-----------------------+--------------------+------------+------------+------------------|
+| \color{red}  Link 1   | $(\theta_1)$       |          0 |          0 |              -90 |
+| \color{blue} Link 2   | $(\theta_2$)       |          0 |        430 |                0 |
+| \color{green} Link 3  | $-90 - (\theta_3)$ |      149.1 |       20.3 |              -90 |
+| \color{purple} Link 4 | $(\theta_4)$       |        435 |          0 |               90 |
+| \color{orange} Link 5 | $(\theta_5)$       |          0 |          0 |              -90 |
+| \color{black} Link 6  | $(\theta_6)$       |         60 |          0 |                0 |
 
 ** Question 2
 Compose a chain of transformations that will give you the relationship between the base frame,
@@ -285,29 +285,31 @@ Use the same notation we have used for the Stanford manipulator (slides or p.7 F
     \munderbar{C}_0 & \mundertilde{o}_0 \\
     0^T             & 1
 \end{bmatrix}
-\begin{bmatrix}
+\begin{bmatrix} % ^0T_1
     e^{\theta_1 k \times} e^{-\pi/2 i \times} & 0 \\
     0^T                                       & 1
 \end{bmatrix}
-\begin{bmatrix}
+\begin{bmatrix} % ^1T_2
     e^{\theta_2 k \times} & e^{\theta_2 k \times} 430 i \\
     0^T                   & 1
 \end{bmatrix}
-\begin{bmatrix}
-    e^{\theta_3 k \times} e^{\pi/2 i \times} & e^{\theta_3 k \times} (20.3 i + 149.1 k) \\
+\\
+&\phantomrel{=}
+\begin{bmatrix} % ^2T_3
+    e^{-(\pi/2 + \theta_3) k \times} e^{-\pi/2 i \times} & e^{-(\pi/2 + \theta_3) k \times} (20.3 i + 149.1 k) \\
+    0^T                                                  & 1
+\end{bmatrix}
+\begin{bmatrix} % ^3T_4
+    e^{\theta_4 k \times} e^{\pi/2 i \times} & e^{\theta_4 k \times} 435 k \\
     0^T                                      & 1
 \end{bmatrix}
 \\
 &\phantomrel{=}
-\begin{bmatrix}
-    e^{\theta_4 k \times} e^{\pi/2 i \times} & e^{\theta_4 k \times} 435 k \\
+\begin{bmatrix} % ^4T_5
+    e^{\theta_5 k \times} e^{-\pi/2 i \times} & 0 \\
     0^T                                      & 1
 \end{bmatrix}
-\begin{bmatrix}
-    e^{\theta_5 k \times} e^{\pi/2 i \times} & 0 \\
-    0^T                                      & 1
-\end{bmatrix}
-\begin{bmatrix}
+\begin{bmatrix} % ^5T_6
     e^{\theta_6 k \times} & e^{\theta_6 k \times} 60 k \\
     0^T                   & 1
 \end{bmatrix}
