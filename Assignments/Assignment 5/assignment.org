@@ -1,0 +1,685 @@
+#+TITLE: MECH 464 Homework Assignment 5
+#+AUTHOR: Jasper Chan - 37467164 @@latex:\\@@ jasperchan515@gmail.com
+
+#+OPTIONS: toc:nil H:5 num:t
+
+
+#+LATEX_HEADER: \definecolor{bg}{rgb}{0.95,0.95,0.95}
+#+LATEX_HEADER: \setminted{frame=single,bgcolor=bg,samepage=true}
+#+LATEX_HEADER: \setlength{\parindent}{0pt}
+#+LATEX_HEADER: \sisetup{per-mode=fraction}
+#+LATEX_HEADER: \usepackage[shellescape]{gmp}
+#+LATEX_HEADER: \usepackage{gauss}
+#+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{svg}
+#+LATEX_HEADER: \usepackage{cancel}
+#+LATEX_HEADER: \usepackage{amssymb}
+#+LATEX_HEADER: \usepackage{accents}
+#+LATEX_HEADER: \usepackage{titlesec}
+#+LATEX_HEADER: \usepackage{mathtools, nccmath}
+#+LATEX_HEADER: \newcommand{\Lwrap}[1]{\left\{#1\right\}}
+#+LATEX_HEADER: \newcommand{\Lagr}[1]{\mathcal{L}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Lagri}[1]{\mathcal{L}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztrans}[1]{\mathcal{Z}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztransi}[1]{\mathcal{Z}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\ZOH}[1]{\text{ZOH}\left(#1\right)}
+#+LATEX_HEADER: \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+#+LATEX_HEADER: \makeatletter \AtBeginEnvironment{minted}{\dontdofcolorbox} \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}} \makeatother
+#+LATEX_HEADER: \titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+#+LATEX_HEADER: \titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{0.5em}
+#+LATEX_HEADER: \setcounter{secnumdepth}{5}
+#+LATEX_HEADER: \newcommand\munderbar[1]{\underaccent{\bar}{#1}}
+#+LATEX_HEADER: \newcommand\dmunderbar[1]{\munderbar{\munderbar{#1}}}
+#+LATEX_HEADER: \newcommand\mundertilde[1]{\underaccent{\tilde}{#1}}
+#+LATEX_HEADER: \newcommand{\norm}[1]{\| #1 \|}
+#+LATEX_HEADER: \newcommand*\phantomrel[1]{\mathrel{\phantom{#1}}}% My preferred typesetting
+#+LATEX_HEADER: \newcommand\scalemath[2]{\scalebox{#1}{\mbox{\ensuremath{\displaystyle #2}}}}
+
+Considering the Puma Manipulator of HW #3, using the frame assignment provided in the solution:
+
+#+CAPTION: The Puma 560 robot schematic (not to scale).
+#+ATTR_LATEX: :placement [H]
+#+NAME: fig:hw3_fig3
+[[file:hw3_fig3.png]]
+
+* Exercise 1
+
+** Question 1
+
+Find the manipulator geometric Jacobian.
+In which robot configuration is the robot Jacobian singular?
+
+*** Solution
+
+Assigning coordinate frames to Figure [[fig:hw3_fig3]]:
+#+ATTR_LATEX: :placement [H]
+#+CAPTION: The Puma 560 robot schematic (not to scale) with coordinate systems assigned.
+#+NAME: fig:hand_drawing_ex1
+[[file:hand_drawing_ex1.pdf]]
+
+The Jacobian $\munderbar{J}_n(q)$ relates the joint rates with the velocity of the $n\text{-th}$ frame (usually the griper):
+\begin{align*}
+\begin{bmatrix}
+    \dot{\mundertilde{o}}_n \\ \munderbar{\omega}_n
+\end{bmatrix}
+&=
+\munderbar{J}_n (q) \dot{q}
+\\
+&=
+\left[
+    \munderbar{J}_{n, 0}
+    \cdots
+    \munderbar{J}_{n, n - 1}
+\right](q)
+\dot{q}
+\end{align*}
+
+Where:
+\begin{align*}
+\munderbar{J}_{n, i - 1}
+&=
+\left\{
+    \begin{array}{cl}
+        \begin{bmatrix}
+            \munderbar{k}_{i - 1} \times
+            \left(
+                \mundertilde{o}_n
+                - \mundertilde{o}_{i - 1}
+            \right) \\
+            \munderbar{k}_{i - 1}
+        \end{bmatrix}
+        &
+        \text{if joint $i$ is revolute}
+        \\
+        \begin{bmatrix}
+            \munderbar{k}_{i - 1} \\
+            0
+        \end{bmatrix}
+        &
+        \text{if joint $i$ is prismatic}
+    \end{array}
+\right\}
+\end{align*}
+
+The Jacobian for the robot end effector shown in Figure [[fig:hand_drawing_ex1]] is then:
+
+\begin{align*}
+\munderbar{J}_6(q)
+&=
+\begin{bmatrix}
+    \munderbar{J}_{6, 0} &
+    \munderbar{J}_{6, 1} &
+    \munderbar{J}_{6, 2} &
+    \munderbar{J}_{6, 3} &
+    \munderbar{J}_{6, 4} &
+    \munderbar{J}_{6, 5}
+\end{bmatrix}(q)
+\\
+&=
+\begin{bmatrix}
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{0}
+    \right) &
+    \munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{1}
+    \right) &
+    \munderbar{k}_{2} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{2}
+    \right) &
+    \munderbar{k}_{3} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{4} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{4}
+    \right) &
+    \munderbar{k}_{5} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{5}
+    \right)
+    \\
+    \munderbar{k}_{0} &
+    \munderbar{k}_{1} &
+    \munderbar{k}_{2} &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\end{align*}
+
+We note that:
+- the coordinate systems for the last 3 joints have been placed at the center of the spherical wrist, therefore $\mundertilde{o}_3 = \mundertilde{o}_4 = \mundertilde{o}_5$.
+- the coordinate systems for the first 2 joints have been placed at the same location, therefore $\mundertilde{o}_0 = \mundertilde{o}_1$.
+- the second and third joints are always parallel regardless of joint configuration, therefore $\munderbar{k}_1 = -\munderbar{k}_2$
+
+We can then rewrite $\munderbar{J}_6(q)$ as:
+\begin{align*}
+\munderbar{J}_6(q)
+&=
+\begin{bmatrix}
+    \munderbar{J}_{6, 0} &
+    \munderbar{J}_{6, 1} &
+    \munderbar{J}_{6, 2} &
+    \munderbar{J}_{6, 3} &
+    \munderbar{J}_{6, 4} &
+    \munderbar{J}_{6, 5}
+\end{bmatrix}(q)
+\\
+&=
+\begin{bmatrix}
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{0}
+    \right) &
+    \munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{0}
+    \right) &
+    -\munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{2}
+    \right) &
+    \munderbar{k}_{3} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{4} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right) &
+    \munderbar{k}_{5} \times
+    \left(
+        \mundertilde{o}_6
+        - \mundertilde{o}_{3}
+    \right)
+    \\
+    \munderbar{k}_{0} &
+    \munderbar{k}_{1} &
+    -\munderbar{k}_{1} &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\end{align*}
+
+To find singular configurations, we can apply the elementary row operation:
+\begin{align*}
+\munderbar{J}_6(q)
+&\sim
+\scalemath{0.85}{
+    \begin{gmatrix}[b]
+        \munderbar{k}_{0} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{0}
+        \right) &
+        \munderbar{k}_{1} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{0}
+        \right) &
+        -\munderbar{k}_{1} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{2}
+        \right) &
+        \munderbar{k}_{3} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{3}
+        \right) &
+        \munderbar{k}_{4} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{3}
+        \right) &
+        \munderbar{k}_{5} \times
+        \left(
+            \mundertilde{o}_6
+            - \mundertilde{o}_{3}
+        \right)
+        \\
+        \munderbar{k}_{0} &
+        \munderbar{k}_{1} &
+        -\munderbar{k}_{1} &
+        \munderbar{k}_{3} &
+        \munderbar{k}_{4} &
+        \munderbar{k}_{5}
+        \rowops
+            \add[\left(\mundertilde{o}_6 - \mundertilde{o}_3\right) \times]{1}{0}
+    \end{gmatrix}(q)
+}
+\\
+&\sim
+\begin{bmatrix}
+    \munderbar{k}_{0} \times
+    \left(
+        \mundertilde{o}_3
+        - \mundertilde{o}_{0}
+    \right) &
+    \munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_3
+        - \mundertilde{o}_{0}
+    \right) &
+    -\munderbar{k}_{1} \times
+    \left(
+        \mundertilde{o}_3
+        - \mundertilde{o}_{2}
+    \right) &
+    0 &
+    0 &
+    0 &
+    \\
+    \munderbar{k}_{0} &
+    \munderbar{k}_{1} &
+    -\munderbar{k}_{1} &
+    \munderbar{k}_{3} &
+    \munderbar{k}_{4} &
+    \munderbar{k}_{5}
+\end{bmatrix}(q)
+\\
+&\sim
+\begin{bmatrix}
+    \munderbar{J}_{11} & 0 \\
+    \munderbar{J}_{21} & \munderbar{J}_{22}
+\end{bmatrix}
+\end{align*}
+
+This matrix loses rank (is singular) if either $\munderbar{J}_{11}$ or $\munderbar{J}_{22}$ loses rank.
+
+$\munderbar{J}_{22}$ is singular when
+$\munderbar{k}_3$,
+$\munderbar{k}_4$, and
+$\munderbar{k}_5$
+are coplanar.
+For a spherical wrist, this only happens when $\munderbar{k}_3 \parallel \munderbar{k}_5$, since $\munderbar{k}_4$ is perpendicular to the other two axes.
+The configuration shown in the figure is therefore singular, and so is every configuration where $\theta_5$ is an integer multiple of $\SI{180}{\degree}$ (assuming the figure shows the robot in the home position).
+
+
+$\munderbar{J}_{11}$ is singular when
+$\munderbar{k}_0 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{0} \right)$,
+$\munderbar{k}_1 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{0} \right)$, and
+$-\munderbar{k}_1 \times \left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$
+are coplanar.
+Since $\munderbar{k}_0$ is always perpendicular to $\munderbar{k}_1$, the only case where this can happen is if $\left( \mundertilde{o}_3 - \mundertilde{o}_{0} \right) \parallel \left( \mundertilde{o}_3 - \mundertilde{o}_{2} \right)$.
+This can never happen, due to the offset of the joints caused by the third link.
+** Question 2
+
+Write a MATLAB program which computes the robot Jacobian for a given set of joint angles.
+For example, the user might input
+$\munderbar{q} = [45, -45, 45, 0, -30, 90]$,
+and the program will output the manipulator Jacobian, as a $6 \times 6$ matrix of coordinates relative to the base frame, relating joint velocities to end-effector velocities in base frame.
+
+Use your code to compute the manipulator Jacobians for a number of interesting sets of joint configurations, including:
+- $\munderbar{q} = \begin{bmatrix} \SI{0}{\degree} & \SI{0}{\degree} & \SI{0}{\degree} & \SI{0}{\degree} & \SI{0}{\degree} & \SI{0}{\degree} \end{bmatrix}^T$
+- $\munderbar{q} = \begin{bmatrix} \SI{0}{\degree} & \SI{0}{\degree} & \SI{-90}{\degree} & \SI{0}{\degree} & \SI{0}{\degree} & \SI{180}{\degree} \end{bmatrix}^T$
+- $\munderbar{q} = \begin{bmatrix} \SI{45}{\degree} & \SI{-45}{\degree} & \SI{45}{\degree} & \SI{0}{\degree} & \SI{-30}{\degree} & \SI{90}{\degree} \end{bmatrix}^T$
+
+**Note:** It may be useful to render the Puma robot using the Robotics Toolbox by Peter Corke
+
+*** Solution
+The coordinate system assignment in Question 1 was done for the sake of being able to do kinematic decoupling to find singularities.
+However, because of the offset in the third joint, it isn't possible to express the coordinate system choices in Figure [[fig:hand_drawing_ex1]] with DH parameters.
+
+This is fixed by reselecting the coordinate systems:
+
+#+CAPTION: The Puma 560 robot schematic (not to scale) with coordinate systems assigned (DH paramater compatible).
+#+NAME: fig:hand_drawing_ex1_2
+#+ATTR_LATEX: :placement [H]
+[[file:hand_drawing_ex1_2.pdf]]
+
+The DH parameters for the coordinate systems in Figure [[fig:hand_drawing_ex1_2]] robot are then:
+#+ATTR_LATEX: :placement [H] :align c|c|c|c|c
+| DH Parameter | $\theta_i$                      |  $d_i$ | $a_i$ | $\alpha_i$        |
+|--------------+---------------------------------+--------+-------+-------------------|
+| Link 1       | $(\theta_1)$                    |      0 |     0 | \SI{-90}{\degree} |
+| Link 2       | $(\theta_2)$                    |      0 | 430.0 | \SI{180}{\degree} |
+| Link 3       | $(\theta_3) + \SI{90}{\degree}$ | -149.1 |  20.3 | \SI{90}{\degree}  |
+| Link 4       | $(\theta_4)$                    |  434.0 |     0 | \SI{90}{\degree}  |
+| Link 5       | $(\theta_5)$                    |      0 |     0 | \SI{-90}{\degree} |
+| Link 6       | $(\theta_6)$                    |   60.0 |     0 | \SI{0}{\degree}   |
+
+**** Rendering
+In order to render the robot, we can use ~dh2vrml~[fn:dh2vrml].
+Creating the input file:
+#+begin_src python :tangle puma_560_dh.py :eval never :exports code
+from math import pi
+        
+params = [
+    {
+        "type": "revolute",
+        "theta": 0, "d": 0, "r": 0, "alpha": -pi/2,
+        "offset": (0, 0, -300), "color": (1, 0, 0),
+        "scale": 50,
+    },
+    {
+        "type": "revolute",
+        "theta": 0, "d": 0, "r": 430, "alpha": pi,
+        "offset": (0, 0, 0), "color": (0, 0, 1)
+    },
+    {
+        "type": "revolute",
+        "theta": pi/2, "d": -149.1, "r": 20.3, "alpha": pi/2,
+        "offset": (0, 0, -75), "color": (0, 1, 0)
+    },
+    {
+        "type": "revolute",
+        "theta": 0, "d": 435, "r": 0, "alpha": pi/2,
+        "offset": (0, 0, 225), "color": (0.7, 0, 1),
+        "scale": 15
+    },
+    {
+        "type": "revolute",
+        "theta": 0, "d": 0, "r": 0, "alpha": -pi/2,
+        "offset": (0, 0, 0), "color": (1, 0.4, 0)
+    },
+    {
+        "type": "revolute",
+        "theta": 0, "d": 60, "r": 0, "alpha": 0,
+        "offset": (0, 0, 30), "color": (0, 1, 1)
+    },
+]
+#+end_src
+
+
+Creating the VR Sink file:
+#+begin_src bash :eval never-export :exports both :results code
+# Camera parameters determined by hand to ensure arm stays in frame
+dh2vrml -f puma_560_dh.py \
+        --camera-location 1500 -1050 1200 \
+        --camera-center 500 0 300
+#+end_src
+
+#+RESULTS:
+#+begin_src bash
+====================================
+PyPi x3d package __init__.py diagnostics
+x3d.py package 4.0.62.6 loaded, have fun with X3D Graphics!
+,*** __init__.py successful invocation: from x3d.x3d import *
+====================================
+Opening puma_560_dh.py
+Importing Python file
+Checking XML serialization...
+Python-to-XML well-formed XML document  test of XML output complete
+Python-to-XML X3D 3.3 schema validation test of XML output complete
+Writing output to puma_560_dh.x3d
+#+end_src
+
+[fn:dh2vrml] https://pypi.org/project/dh2vrml/
+
+
+
+
+
+
+
+
+
+
+#+begin_src matlab :session :eval never-export :exports none :results code
+simulink
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+org_babel_eoe
+#+end_src
+
+We can now load this into a Simulink file:
+#+begin_src matlab :session :exports none :results none
+% dummy value so system loads properly
+q = [0; 0; 0; 0; 0; 0];
+open_system('render_puma_560');
+print -dsvg -s 'render_puma_560.svg'
+#+end_src
+
+#+begin_src bash :results output :exports none
+inkscape render_puma_560.svg --export-text-to-path --export-plain-svg -o render_puma_560_fixed.svg
+#+end_src
+
+#+RESULTS:
+
+[[file:render_puma_560_fixed.svg]]
+
+
+Creating a function to run the render:
+
+#+begin_src matlab :exports code :tangle render_puma_560_to_image.m :eval never
+function render_puma_560_to_image(filename)
+    out = sim('render_puma_560', 0.1);
+    last_frame  = out.frames.Data(:,:,:,end);
+    imwrite(last_frame, filename)
+end
+#+end_src
+
+Testing our function[fn:angles]:
+#+begin_src matlab :session :exports both :results file
+q = [0; 0; 0; 0; 0; 0];
+filename = 'puma_560_sample_render.png';
+render_puma_560_to_image(filename);
+ans = filename
+#+end_src
+
+#+RESULTS:
+[[file:puma_560_sample_render.png]]
+
+[fn:angles] It is sometimes hard to see the exact orientation of the joints in a flat image.
+Rest assured the renderings appear to be correct when inspected from multiple angles.
+
+
+
+
+
+
+**** Calculating the Jacobian
+
+In order to calculate the coordinates of the Jacobian, we first need to calculate the transformation matrices between coordinate systems.
+
+Writing a function to calculate the matrix for a single row of the DH table:
+#+begin_src matlab :exports code :tangle dh_param_to_matrix.m :eval never
+function T = dh_param_to_matrix(theta, d, a, alpha)
+    Z = [
+        cos(theta) -sin(theta) 0 0;
+        sin(theta)  cos(theta) 0 0;
+        0           0          1 d;
+        0           0          0 1;
+        ];
+    X = [
+        1 0           0          a;
+        0 cos(alpha) -sin(alpha) 0;
+        0 sin(alpha)  cos(alpha) 0;
+        0 0           0          1;
+        ];
+    T = Z*X;
+end
+#+end_src
+
+Writing a function to generate the DH table:
+#+begin_src matlab :exports code :tangle puma_dh_table.m :eval never
+function tbl = puma_dh_table(q)
+    tbl = [
+        q(1)          0      0     -pi/2;
+        q(2)          0      430    pi;
+        q(3) + pi/2  -149.1  20.3   pi/2
+        q(4)          434    0      pi;
+        q(5)          0      0     -pi/2;
+        q(6)          60     0      0;
+        ];
+end
+#+end_src
+
+Writing a function to calculate the Jacobian coordinates:
+#+begin_src matlab :exports code :tangle puma_jacobian.m :eval never
+function J = puma_jacobian(q)
+    % First generate the dh table
+    tbl = puma_dh_table(q);
+    tbl_size = size(tbl);
+    tbl_rows = tbl_size(1);
+
+    % Set our starting coordinates in the base frame
+    k = {[0; 0; 1]};
+    o = {[0; 0; 0]};
+    for idx = 1:tbl_rows
+        row = tbl(idx, :);
+        row = num2cell(row);
+
+        % Calculate transformation matrix
+        T = dh_param_to_matrix(row{:});
+
+        % Multiply the last set of points/vectors by the next transformation
+        % matrix
+        k4 = T*[k{idx}; 0];
+        o4 = T*[o{idx}; 1];
+        k{idx+1} = k4(1:3);
+        o{idx+1} = o4(1:3);
+    end
+
+    % Construct the Jacobian
+    J = [];
+    for idx = 1:tbl_rows
+        col = [
+            cross(k{idx}, (o{end} - o{idx}));
+            k{idx};
+            ];
+        J = [J col];
+    end
+end
+#+end_src
+
+
+
+Calculating the Jacobian and rendering the robot:
+
+#+begin_src matlab :session :exports both :results code output
+filename = 'ex1_params1.png';
+q = [0; 0; 0; 0; 0; 0];
+J = puma_jacobian(q)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+J =
+   1.0e+03 *
+   -0.5831    0.5103   -0.5103    0.1328   -1.0334    0.0600
+    0.0000    0.0000   -0.0000   -0.0000    0.0000   -0.0000
+         0   -0.0000   -0.4300    0.0000    0.0000         0
+         0         0         0    0.0000    0.0000    0.0000
+         0    0.0010   -0.0010   -0.0000    0.0000    0.0010
+    0.0010    0.0000    0.0000   -0.0010    0.0010   -0.0000
+#+end_src
+
+#+begin_src matlab :session :exports both :results file
+render_puma_560_to_image(filename);
+ans = filename
+#+end_src
+
+#+RESULTS:
+[[file:ex1_params1.png]]
+
+
+Calculating the Jacobian and rendering the robot:
+
+#+begin_src matlab :session :exports both :results code output
+filename = 'ex1_params2.png';
+q = [0; 0; -pi/2; 0; 0; pi];
+J = puma_jacobian(q)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+J =
+  583.1000   60.0000  -60.0000 -583.1000  583.1000   60.0000
+ -450.3000   -0.0000   -0.0000  900.6000 -900.6000    0.0000
+         0  450.3000 -880.3000   -0.0000    0.0000  900.6000
+         0         0         0         0         0         0
+         0    1.0000   -1.0000   -0.0000    0.0000    1.0000
+    1.0000    0.0000    0.0000   -1.0000    1.0000   -0.0000
+#+end_src
+
+#+begin_src matlab :session :exports both :results file
+render_puma_560_to_image(filename);
+ans = filename
+#+end_src
+
+#+RESULTS:
+[[file:ex1_params2.png]]
+
+Calculating the Jacobian and rendering the robot:
+
+#+begin_src matlab :session :exports both :results code output
+filename = 'ex1_params3.png';
+q = [pi/4; -pi/4; pi/4; 0; -pi/6; pi/4];
+J = puma_jacobian(q)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+J =
+   1.0e+03 *
+   -0.7976    0.2046   -0.0000   -0.5250   -0.4227   -0.0816
+   -0.4512    0.2046    0.2894   -0.5250    0.4227    0.4555
+         0   -0.2450   -1.1016    0.2450    0.8830   -0.2984
+         0   -0.0007   -0.0010    0.0007    0.0007    0.0006
+         0    0.0007   -0.0000   -0.0007    0.0007   -0.0004
+    0.0010    0.0000    0.0000   -0.0000    0.0000   -0.0007
+#+end_src
+
+#+begin_src matlab :session :exports both :results file
+render_puma_560_to_image(filename);
+ans = filename
+#+end_src
+
+#+RESULTS:
+[[file:ex1_params3.png]]
+
+
+
+* Exercise 2
+
+** Question 1
+
+Solve the inverse kinematics of the Puma 560 manipulator.
+Make sure that you follow the exact same forward kinematics of the robot that is provided in the solution to HW #3.
+
+*** Solution
+
+** Question 2
+Write a MATLAB program that provides /all/ solutions to the inverse kinematics problem of the PUMA 560 robot of HW #3.
+Inputs are desired end-effector location $\mundertilde{o}_d$, approach vector $(\munderbar{k}_d)$, and sliding vector $(\munderbar{j}_d)$.
+Output all valid sets of joint angles (in degrees) which achieve this.
+
+#+ATTR_LATEX: :placement [H] :align c|c|c|c|c|c
+| DH Parameter | $\theta_i$                      |  $d_i$ | $a_i$ | $\alpha_i$        | Motion Range                                       |
+|--------------+---------------------------------+--------+-------+-------------------+----------------------------------------------------|
+| Link 1       | $(\theta_1)$                    |      0 |     0 | \SI{-90}{\degree} | $\SI{-160}{\degree} \rightarrow \SI{160}{\degree}$ |
+| Link 2       | $(\theta_2)$                    |      0 | 430.0 | \SI{180}{\degree} | $\SI{-225}{\degree} \rightarrow \SI{45}{\degree}$  |
+| Link 3       | $(\theta_3) + \SI{90}{\degree}$ | -149.1 |  20.3 | \SI{90}{\degree}  | $\SI{-135}{\degree} \rightarrow \SI{135}{\degree}$ |
+| Link 4       | $(\theta_4)$                    |  434.0 |     0 | \SI{90}{\degree}  | $\SI{-110}{\degree} \rightarrow \SI{170}{\degree}$ |
+| Link 5       | $(\theta_5)$                    |      0 |     0 | \SI{-90}{\degree} | $\SI{-100}{\degree} \rightarrow \SI{100}{\degree}$ |
+| Link 6       | $(\theta_6)$                    |   60.0 |     0 | \SI{0}{\degree}   | $\SI{-266}{\degree} \rightarrow \SI{266}{\degree}$ |
+
+**Note:** For joint 3, for $\SI{-135}{\degree} \leq \theta_3 \SI{135}{\degree}$, **not** $\SI{-135}{\degree} \leq \theta_3 \SI{135}{\degree}$
+
+Verify that your program works for several distinct sets of inputs by feeding each of your solutions into the forward kinematics of HW #3
+(briefly explain how you chose the inputs).
+
+Document your code with references to your inverse kinematics solution.
+Carefully consider how many possible solutions there are, considering the joint ranges in the table provided.
+
+
