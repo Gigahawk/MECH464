@@ -8,6 +8,18 @@ puma_jacobian.m
 render_puma_560_to_image.m
 render_puma_560.svg
 render_puma_560_fixed.svg
+arm_config_params.m
+combine_params.m
+desired_frame.m
+puma_fk.m
+puma_ik.m
+wrist_base.m
+wrist_center_location.m
+wrist_params.m
+wrist_params_combined.m
 
 !hand_drawing_ex1.pdf
 !hand_drawing_ex1_2.pdf
+!hand_drawing_side_view_1.pdf
+!hand_drawing_side_view_2.pdf
+

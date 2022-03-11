@@ -83,28 +83,15 @@ Model {
 	ViewObjType		"SimulinkTopLevel"
 	LoadSaveID		"0"
 	Extents			[820.0, 791.0]
-	ZoomFactor		[0.56318681318681318]
-	Offset			[-319.38882501941345, -299.89234501649162]
-	SceneRectInView		[-319.38882501941345, -299.89234501649162, 1456.0, 1404.5073170731707]
+	ZoomFactor		[1.25]
+	Offset			[73.857516444001192, 76.480825715215872]
+	SceneRectInView		[73.857516444001192, 76.480825715215872, 656.0, 632.8]
       }
       Array {
 	Type			"Simulink.DockComponentInfo"
 	Dimension		2
 	Object {
 	  $ObjectID		  6
-	  Type			  "Simulink:Editor:ReferencedFiles"
-	  ID			  "Referenced Files"
-	  Visible		  [0]
-	  CreateCallback	  ""
-	  UserData		  "{\"filterShowRefModels\":\"true\",\"filterShowRefSubs\":\"true\",\"filterShowOnlyDirtyFiles\":\"false\"}\n"
-	  Floating		  [0]
-	  DockPosition		  "Left"
-	  Width			  [640]
-	  Height		  [480]
-	  Minimized		  "Unset"
-	}
-	Object {
-	  $ObjectID		  7
 	  Type			  "GLUE2:PropertyInspector"
 	  ID			  "Property Inspector"
 	  Visible		  [1]
@@ -115,6 +102,19 @@ Model {
 	  Width			  [640]
 	  Height		  [480]
 	  Minimized		  "On"
+	}
+	Object {
+	  $ObjectID		  7
+	  Type			  "Simulink:Editor:ReferencedFiles"
+	  ID			  "Referenced Files"
+	  Visible		  [0]
+	  CreateCallback	  ""
+	  UserData		  "{\"filterShowRefModels\":\"true\",\"filterShowRefSubs\":\"true\",\"filterShowOnlyDirtyFiles\":\"false\"}\n"
+	  Floating		  [0]
+	  DockPosition		  "Left"
+	  Width			  [640]
+	  Height		  [480]
+	  Minimized		  "Unset"
 	}
 	PropName		"DockComponentsInfo"
       }
@@ -146,7 +146,7 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "jasper"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Tue Mar 08 04:21:17 2022"
+  LastModifiedDate	  "Tue Mar 08 19:25:23 2022"
   RTWModifiedTimeStamp	  568614073
   ModelVersionFormat	  "%<AutoIncrement:1.5>"
   SampleTimeColors	  off
@@ -1130,7 +1130,7 @@ Model {
     TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
     TiledPageScale	    1
     ShowPageBoundaries	    off
-    ZoomFactor		    "56"
+    ZoomFactor		    "125"
     ReportName		    "simulink-default.rpt"
     SIDHighWatermark	    "23"
     SimulinkSubDomain	    "Simulink"

@@ -24,6 +24,8 @@
 #+LATEX_HEADER: \newcommand{\Ztransi}[1]{\mathcal{Z}^{-1}\Lwrap{#1}}
 #+LATEX_HEADER: \newcommand{\ZOH}[1]{\text{ZOH}\left(#1\right)}
 #+LATEX_HEADER: \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+#+LATEX_HEADER: \DeclareMathOperator{\sign}{sign}
+#+LATEX_HEADER: \DeclareMathOperator{\arctantwo}{arctan2}
 #+LATEX_HEADER: \makeatletter \AtBeginEnvironment{minted}{\dontdofcolorbox} \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}} \makeatother
 #+LATEX_HEADER: \titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
 #+LATEX_HEADER: \titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{0.5em}
@@ -351,7 +353,7 @@ The DH parameters for the coordinate systems in Figure [[fig:hand_drawing_ex1_2]
 | Link 1       | $(\theta_1)$                    |      0 |     0 | \SI{-90}{\degree} |
 | Link 2       | $(\theta_2)$                    |      0 | 430.0 | \SI{180}{\degree} |
 | Link 3       | $(\theta_3) + \SI{90}{\degree}$ | -149.1 |  20.3 | \SI{90}{\degree}  |
-| Link 4       | $(\theta_4)$                    |  434.0 |     0 | \SI{90}{\degree}  |
+| Link 4       | $(\theta_4)$                    |  435.0 |     0 | \SI{90}{\degree}  |
 | Link 5       | $(\theta_5)$                    |      0 |     0 | \SI{-90}{\degree} |
 | Link 6       | $(\theta_6)$                    |   60.0 |     0 | \SI{0}{\degree}   |
 
@@ -438,7 +440,6 @@ simulink
 
 #+RESULTS:
 #+begin_src matlab
-org_babel_eoe
 #+end_src
 
 We can now load this into a Simulink file:
@@ -461,10 +462,35 @@ inkscape render_puma_560.svg --export-text-to-path --export-plain-svg -o render_
 Creating a function to run the render:
 
 #+begin_src matlab :exports code :tangle render_puma_560_to_image.m :eval never
-function render_puma_560_to_image(filename)
+function render_puma_560_to_image(filename, crop_x, crop_y)
+    arguments
+        filename (1,1) string
+        crop_x (1,2) double = [0 1]
+        crop_y (1,2) double = [0 1]
+    end
     out = sim('render_puma_560', 0.1);
+
+    % Read last frame out of To Workspace block
     last_frame  = out.frames.Data(:,:,:,end);
-    imwrite(last_frame, filename)
+
+    % Camera is placed far away from robot for to keep all
+    % joints in frame, crop image to robot extents
+    image_size = size(last_frame);
+    y_size = image_size(1);
+    x_size = image_size(2);
+    x_start = round(x_size*crop_x(1))
+    x_end = round(x_size*crop_x(2))
+    y_start = round(y_size*crop_y(1))
+    y_end = round(y_size*crop_y(2))
+    if x_start < 1
+        x_start = 1
+    end
+    if y_start < 1
+        y_start = 1
+    end
+    image_data = last_frame(y_start:y_end,x_start:x_end,:);
+
+    imwrite(image_data, filename)
 end
 #+end_src
 
@@ -472,7 +498,7 @@ Testing our function[fn:angles]:
 #+begin_src matlab :session :exports both :results file
 q = [0; 0; 0; 0; 0; 0];
 filename = 'puma_560_sample_render.png';
-render_puma_560_to_image(filename);
+render_puma_560_to_image(filename, [0.32 0.7], [0.4, 0.8]);
 ans = filename
 #+end_src
 
@@ -491,36 +517,79 @@ Rest assured the renderings appear to be correct when inspected from multiple an
 
 In order to calculate the coordinates of the Jacobian, we first need to calculate the transformation matrices between coordinate systems.
 
-Writing a function to calculate the matrix for a single row of the DH table:
+Writing a function to calculate the matrices for the DH table:
 #+begin_src matlab :exports code :tangle dh_param_to_matrix.m :eval never
-function T = dh_param_to_matrix(theta, d, a, alpha)
-    Z = [
-        cos(theta) -sin(theta) 0 0;
-        sin(theta)  cos(theta) 0 0;
-        0           0          1 d;
-        0           0          0 1;
-        ];
-    X = [
-        1 0           0          a;
-        0 cos(alpha) -sin(alpha) 0;
-        0 sin(alpha)  cos(alpha) 0;
-        0 0           0          1;
-        ];
-    T = Z*X;
+function T = dh_param_to_matrix(params)
+    % params is a row vector with the order:
+    % theta, d, a, alpha.
+    %
+    % For a single row vector, the output is a 4x4 matrix.
+    %
+    % The entire table can be calculated at once
+    % by having multiple rows.
+    % This will produce a 4x4 matrix with multiple pages (6 page for PUMA arm).
+    %
+    % Multiple tables can be calculated at once
+    % by having pages of tables
+    % This will produce a 4x4 matrix with multiple pages,
+    % and multiple collections of pages.
+    rows = size(params, 1);
+    pages = size(params, 3);
+    
+    theta = params(:, 1, :);
+    d = params(:, 2, :);
+    a = params(:, 3, :);
+    alpha = params(:, 4, :);
+
+    s_theta = sin(theta);
+    c_theta = cos(theta);
+    s_alpha = sin(alpha);
+    c_alpha = cos(alpha);
+    
+    Z = repmat(eye(4), 1, 1, rows, pages);
+    X = repmat(eye(4), 1, 1, rows, pages);
+
+    Z(1, 1, :, :) = c_theta;
+    Z(2, 2, :, :) = c_theta;
+    Z(1, 2, :, :) = -s_theta;
+    Z(2, 1, :, :) = s_theta;
+    Z(3, 4, :, :) = d;
+
+    X(2, 2, :, :) = c_alpha;
+    X(3, 3, :, :) = c_alpha;
+    X(2, 3, :, :) = -s_alpha;
+    X(3, 2, :, :) = s_alpha;
+    X(1, 4, :, :) = a;
+
+    T = pagemtimes(Z, X);
 end
 #+end_src
 
 Writing a function to generate the DH table:
 #+begin_src matlab :exports code :tangle puma_dh_table.m :eval never
 function tbl = puma_dh_table(q)
-    tbl = [
-        q(1)          0      0     -pi/2;
-        q(2)          0      430    pi;
-        q(3) + pi/2  -149.1  20.3   pi/2
-        q(4)          434    0      pi;
-        q(5)          0      0     -pi/2;
-        q(6)          60     0      0;
+    % q should be a column vector,
+    % Calculating a table for multiple sets of
+    % inputs is done by concatenating columns
+    % horizontally
+
+    % Create the theta column, then transpose columns into pages
+    sets = size(q, 2);
+    theta = q;
+    theta(3,:) = theta(3,:) + pi/2;
+    theta = permute(theta, [1 3 2]);
+
+    const_cols = [
+       % d      a      alpha
+         0      0     -pi/2;
+         0      430    pi;
+        -149.1  20.3   pi/2
+         435    0      pi/2;
+         0      0     -pi/2;
+         60     0      0;
         ];
+    tbl = theta;
+    tbl(:,2:4,:) = repmat(const_cols, 1, 1, sets);
 end
 #+end_src
 
@@ -537,10 +606,9 @@ function J = puma_jacobian(q)
     o = {[0; 0; 0]};
     for idx = 1:tbl_rows
         row = tbl(idx, :);
-        row = num2cell(row);
 
         % Calculate transformation matrix
-        T = dh_param_to_matrix(row{:});
+        T = dh_param_to_matrix(row);
 
         % Multiply the last set of points/vectors by the next transformation
         % matrix
@@ -564,6 +632,7 @@ end
 
 
 
+**** $\underline{q} = \begin{bmatrix} 0 & 0 & 0 & 0 & 0 & 0\end{bmatrix}^T$
 Calculating the Jacobian and rendering the robot:
 
 #+begin_src matlab :session :exports both :results code output
@@ -585,7 +654,7 @@ J =
 #+end_src
 
 #+begin_src matlab :session :exports both :results file
-render_puma_560_to_image(filename);
+render_puma_560_to_image(filename, [0.32 0.7], [0.4, 0.8]);
 ans = filename
 #+end_src
 
@@ -593,6 +662,7 @@ ans = filename
 [[file:ex1_params1.png]]
 
 
+**** $\underline{q} = \begin{bmatrix} 0 & 0 & \SI{-90}{\degree} & 0 & 0 & \SI{180}{\degree}\end{bmatrix}^T$
 Calculating the Jacobian and rendering the robot:
 
 #+begin_src matlab :session :exports both :results code output
@@ -613,13 +683,14 @@ J =
 #+end_src
 
 #+begin_src matlab :session :exports both :results file
-render_puma_560_to_image(filename);
+render_puma_560_to_image(filename, [0.3 0.6], [0.45 0.9]);
 ans = filename
 #+end_src
 
 #+RESULTS:
 [[file:ex1_params2.png]]
 
+**** $\underline{q} = \begin{bmatrix} \SI{45}{\degree} & \SI{-45}{\degree} & \SI{45}{\degree} & 0 & \SI{-30}{\degree} & \SI{45}{\degree}\end{bmatrix}^T$
 Calculating the Jacobian and rendering the robot:
 
 #+begin_src matlab :session :exports both :results code output
@@ -641,7 +712,7 @@ J =
 #+end_src
 
 #+begin_src matlab :session :exports both :results file
-render_puma_560_to_image(filename);
+render_puma_560_to_image(filename, [0.3 0.7], [0, 0.8]);
 ans = filename
 #+end_src
 
@@ -659,9 +730,353 @@ Make sure that you follow the exact same forward kinematics of the robot that is
 
 *** Solution
 
+Note: the DH parameters provided in this assignment and HW #3 solutions place $\mundertilde{o}_3$ away from the wrist center.
+For the sake of kinematic decoupling I will instead be using the coordinate system assignment shown in Figure [[fig:hand_drawing_ex1]].
+
+**** Wrist Center Location
+<<sec:wrist_center_location>>
+First, we want to find the location of the wrist center
+$\mundertilde{o}_3$ given
+$\mundertilde{o}_6 = \mundertilde{o}_d$ and
+$\munderbar{C}_6 = \munderbar{C}_d$.
+For a spherical wrist, this is
+\begin{align*}
+\mundertilde{o}_3
+&=
+\mundertilde{o}_d - d_6\munderbar{C}_d k
+\\
+&=
+\mundertilde{o}_d - 60\munderbar{C}_d k
+\end{align*}
+
+**** Calculating Arm Parameters for Wrist Center Placement
+<<sec:arm_params>>
+***** Approach
+With our desired $\mundertilde{o}_3$ known, we can use geometric intuition and direct kinematics to solve for configurations of the arm that place the wrist center at our desired $\mundertilde{o}_3$.
+
+We note that $r \triangleq \| \mundertilde{o}_3 - \mundertilde{o}_0 \|$ is controlled only by $\theta_3$, since $\theta_1$ and $\theta_2$ produce rotations about $\mundertilde{o}_0$.
+
+Because of this, we first find $\theta_3$ to set $r$ to the desired value.
+
+Next, we find a value for $\theta_2$ to set the $\munderbar{k}_0$ component of $(\mundertilde{o}_3 - \mundertilde{o}_0)$ to the desired value.
+
+Finally, we find a value for $\theta_1$ to rotate $(\mundertilde{o}_3 - \mundertilde{o}_0)$ into the desired position.
+
+
+***** Setting $r$
+<<sec:setting_r>>
+
+
+Looking through $\munderbar{j}_0$ in Figure [[fig:hand_drawing_side_view_1]], we see the projection of
+$\mundertilde{o}_3 - \mundertilde{o}_0$
+onto the
+$\munderbar{i}_0 \munderbar{k}_0$ plane.
+
+#+CAPTION: Side view of arm with all joints at home position
+#+NAME: fig:hand_drawing_side_view_1
+#+ATTR_LATEX: :placement [H]
+[[file:hand_drawing_side_view_1.pdf]]
+
+The length of this projection is given by:
+\begin{align*}
+\ell_1^2
+&=
+430^2 + (435^2 + 20.3^2) - 2(430)\sqrt{435^2 + 20.3^2} \cos{\alpha}
+\\
+&\triangleq
+430^2 + c_1^2 - 2(430)c_1 \cos{\alpha}
+\end{align*}
+
+We can also see from the figure that:
+\begin{align*}
+\theta_3
+&=
+\pi - \left(\alpha + \arctan\frac{20.3}{435}\right)
+\\
+&\triangleq
+\pi - \left(\alpha + \beta_1\right)
+\end{align*}
+
+$\| \mundertilde{o}_3 - \mundertilde{o}_0 \|$
+is then given by:
+
+\begin{align*}
+\| \mundertilde{o}_3 - \mundertilde{o}_0 \|^2
+\triangleq
+r^2
+&=
+\ell_1^2
++ 149.1^2
+\\
+&=
+\left[
+    430^2 + c_1^2 - 2(430)c_1
+    \cos\alpha
+\right]
++ 149.1^2
+\\
+&=
+430^2
++ c_1^2 
++ 149.1^2
+- 2(430)c_1
+\cos\alpha
+\end{align*}
+
+Solving for $\alpha$:
+
+\begin{align*}
+- 2(430)c_1
+\cos\alpha
+&=
+r^2 - (
+    430^2
+    + c_1^2 
+    + 149.1^2
+)
+\\
+\cos\alpha
+&=
+\frac{
+    r^2 - (
+        430^2
+        + c_1^2 
+        + 149.1^2
+    )
+}{
+    - 2(430)c_1
+}
+\\
+\alpha
+&=
+\arccos
+\left(
+    \frac{
+        r^2 - (
+            430^2
+            + c_1^2 
+            + 149.1^2
+        )
+    }{
+        - 2(430)c_1
+    }
+\right)
+\\
+\end{align*}
+
+Note that these equations give the "elbow down" configuration, the "elbow up" configuration can be achieved with:
+\begin{align*}
+\theta_3 = -\pi + (\alpha - \beta_1)
+\end{align*}
+
+
+***** Setting $\underline{k}_0$ Component
+<<sec:setting_k_comp>>
+
+#+CAPTION: Side view of arm with $\theta_3$ set
+#+NAME: fig:hand_drawing_side_view_2
+#+ATTR_LATEX: :placement [H]
+[[file:hand_drawing_side_view_2.pdf]]
+
+
+Looking at Figure [[fig:hand_drawing_side_view_2]], we can see that currently the $\underline{k}_0$ of $(\mundertilde{o}_3 - \mundertilde{o}_0)$ is given by[fn:h1_pm]:
+\begin{align*}
+h_1 \triangleq \pm c_1\sin(\pi - \alpha)
+\end{align*}
+
+
+[fn:h1_pm] $h_1$ is positive in the elbow down configuration, and negative in the elbow up position
+
+
+
+
+
+With that known, we can find the current elevation angle of $\ell_1$:
+\begin{align*}
+\Theta_\text{elev}
+&=
+\arcsin
+\frac{h_1}{\ell_1}
+\end{align*}
+
+Note at this point we have defined $\ell_1$ but haven't needed to calculate it.
+We can find it with:
+\begin{align*}
+\ell_1 = \sqrt{r^2 - 149.1^2}
+\end{align*}
+
+We want to rotate $\ell_1$ such that it has the correct height by setting $\theta_2$:
+\begin{align*}
+-\theta_2 + \Theta_\text{elev}
+&=
+\arcsin
+\frac{h_d}{\ell_1}
+\\
+-\theta_2
+&=
+\arcsin
+\frac{h_d}{\ell_1}
+- \Theta_\text{elev}
+\\
+\theta_2
+&=
+-\arcsin
+\frac{h_d}{\ell_1}
++ \Theta_\text{elev}
+\end{align*}
+
+***** Rotating Into Position
+<<sec:rotating_into_position>>
+
+Looking at Figure [[fig:hand_drawing_side_view_2]], lets find the current $\munderbar{i}_0$ component of $(\mundertilde{o}_3 - \mundertilde{o}_0)$.
+This is given by:
+\begin{align*}
+\ell_2 = \ell_1 \cos(\theta_2 - \Theta_\text{elev})
+\end{align*}
+
+Looking down through $-\munderbar{k}_0$ in Figure [[fig:hand_drawing_top_view_1]]:
+#+CAPTION: Top down view of arm with $\theta_2$, $\theta_3$ set
+#+NAME: fig:hand_drawing_top_view_1
+#+ATTR_LATEX: :placement [H]
+[[file:hand_drawing_top_view_1.pdf]]
+
+We can see the current azimuth angle is:
+\begin{align*}
+\Theta_\text{azmt}
+&=
+\arctan \frac{149.1}{\ell_2}
+\end{align*}
+
+Now we can find $\theta_1$ to rotate the arm into the desired position
+\begin{align*}
+\theta_1 + \Theta_\text{azmt}
+&=
+\arctantwo (
+  (\mundertilde{o}_3 - \mundertilde{o}_0)_2,
+  (\mundertilde{o}_3 - \mundertilde{o}_0)_1
+)
+\\
+\theta_1 
+&=
+\arctantwo (
+  (\mundertilde{o}_3 - \mundertilde{o}_0)_2,
+  (\mundertilde{o}_3 - \mundertilde{o}_0)_1
+)
+- \Theta_\text{azmt}
+\end{align*}
+
+***** Other Configurations
+
+Currently, the arm is in a "shoulder left" and elbow down/up (depending on choice of $\theta_3$) configuration.
+There is another pair of "shoulder right" configurations that can be achieved by:
+
+\begin{align*}
+\theta_1
+&= 
+-\pi
++
+\arctantwo (
+  (\mundertilde{o}_3 - \mundertilde{o}_0)_2,
+  (\mundertilde{o}_3 - \mundertilde{o}_0)_1
+)
++ \Theta_\text{azmt}
+\\
+\theta_2
+&=
+-(\pi
+-\arcsin
+\frac{h_d}{\ell_1}
++ \Theta_\text{elev}
+)
+\end{align*}
+
+$\theta_3$ remains unchanged, although the elbow direction will be flipped
+
+**** Calculating ${^0C_3}$
+<<sec:calculating_0c3>>
+With the arm configuration found, ${^0C_3}$ can be calculated using the DH table.
+
+This is valid despite using a different coordinate system assignment because the only change made from the DH assignment is the translation of $\munderbar{C}_3$, its orientation remains the same.
+**** Calculating Wrist Parameters
+<<sec:calculating_wrist_params>>
+
+Following the notes, first we find $\munderbar{k}_4$ with:
+\begin{align*}
+\munderbar{k}_4
+&= 
+\pm
+\frac{
+    \munderbar{k}_3 \times \munderbar{k}_6
+}{
+    \| \munderbar{k}_3 \times \munderbar{k}_6 \|
+}
+\end{align*}
+
+We can then solve for
+$\theta_4$,
+$\theta_5$,
+$\theta_6$,
+with:
+\begin{align*}
+| \theta_4 |
+&=
+2 \tan^{-1}
+\frac{
+    \| \munderbar{k}_4 - \munderbar{j}_3 \|
+}{
+    \| \munderbar{k}_4 + \munderbar{j}_3 \|
+}
+\\
+\sign \theta_4
+&=
+-\sign
+\left(
+    \munderbar{k}_4^T
+    \munderbar{i}_3
+\right)
+\\
+\\
+| \theta_5 |
+&=
+2 \tan^{-1}
+\frac{
+    \| \munderbar{k}_6 - \munderbar{k}_3 \|
+}{
+    \| \munderbar{k}_6 + \munderbar{k}_3 \|
+}
+\\
+\sign \theta_5
+&=
+-\sign
+\left(
+    \munderbar{k}_6^T
+    (\munderbar{k}_4 \times \munderbar{k}_3)
+\right)
+\\
+\\
+| \theta_6 |
+&=
+2 \tan^{-1}
+\frac{
+    \| \munderbar{j}_6 - \munderbar{k}_4 \|
+}{
+    \| \munderbar{j}_6 + \munderbar{k}_4 \|
+}
+\\
+\sign \theta_6
+&=
+\sign
+\left(
+    \munderbar{k}_4^T
+    \munderbar{i}_6
+\right)
+\end{align*}
+
+
+
 ** Question 2
 Write a MATLAB program that provides /all/ solutions to the inverse kinematics problem of the PUMA 560 robot of HW #3.
-Inputs are desired end-effector location $\mundertilde{o}_d$, approach vector $(\munderbar{k}_d)$, and sliding vector $(\munderbar{j}_d)$.
+Inputs are desired end-effector location $(\mundertilde{o}_d)$, approach vector $(\munderbar{k}_d)$, and sliding vector $(\munderbar{j}_d)$.
 Output all valid sets of joint angles (in degrees) which achieve this.
 
 #+ATTR_LATEX: :placement [H] :align c|c|c|c|c|c
@@ -670,11 +1085,11 @@ Output all valid sets of joint angles (in degrees) which achieve this.
 | Link 1       | $(\theta_1)$                    |      0 |     0 | \SI{-90}{\degree} | $\SI{-160}{\degree} \rightarrow \SI{160}{\degree}$ |
 | Link 2       | $(\theta_2)$                    |      0 | 430.0 | \SI{180}{\degree} | $\SI{-225}{\degree} \rightarrow \SI{45}{\degree}$  |
 | Link 3       | $(\theta_3) + \SI{90}{\degree}$ | -149.1 |  20.3 | \SI{90}{\degree}  | $\SI{-135}{\degree} \rightarrow \SI{135}{\degree}$ |
-| Link 4       | $(\theta_4)$                    |  434.0 |     0 | \SI{90}{\degree}  | $\SI{-110}{\degree} \rightarrow \SI{170}{\degree}$ |
+| Link 4       | $(\theta_4)$                    |  435.0 |     0 | \SI{90}{\degree}  | $\SI{-110}{\degree} \rightarrow \SI{170}{\degree}$ |
 | Link 5       | $(\theta_5)$                    |      0 |     0 | \SI{-90}{\degree} | $\SI{-100}{\degree} \rightarrow \SI{100}{\degree}$ |
 | Link 6       | $(\theta_6)$                    |   60.0 |     0 | \SI{0}{\degree}   | $\SI{-266}{\degree} \rightarrow \SI{266}{\degree}$ |
 
-**Note:** For joint 3, for $\SI{-135}{\degree} \leq \theta_3 \SI{135}{\degree}$, **not** $\SI{-135}{\degree} \leq \theta_3 \SI{135}{\degree}$
+**Note:** For joint 3, for $\SI{-135}{\degree} \leq \theta_3 \leq \SI{135}{\degree}$, **not** $\SI{-135}{\degree} \leq \theta_3 \SI{135}{\degree}$
 
 Verify that your program works for several distinct sets of inputs by feeding each of your solutions into the forward kinematics of HW #3
 (briefly explain how you chose the inputs).
@@ -683,3 +1098,642 @@ Document your code with references to your inverse kinematics solution.
 Carefully consider how many possible solutions there are, considering the joint ranges in the table provided.
 
 
+*** Solution
+
+Because the inputs only specify two of the three vectors for $\munderbar{C}_d$, lets first write a function to generate it:
+
+#+begin_src matlab :exports code :tangle desired_frame.m :eval never
+function C_d = desired_frame(j_d, k_d)
+    i_d = cross(j_d, k_d);
+    C_d = [i_d j_d k_d];
+end
+#+end_src
+
+Now that we have ${^0C_d}$, we can implement a function to do the calculation for the wrist center location described in Section [[sec:wrist_center_location]]
+
+
+#+begin_src matlab :exports code :tangle wrist_center_location.m :eval never
+function o_3 = wrist_center_location(o_d, C_d)
+    k = [0; 0; 1];
+    o_3 = o_d - 60*C_d*k;
+end
+#+end_src
+
+With the wrist center known, we can calculate the arm configuration parameters.
+
+First setting up some constants:
+#+begin_src matlab :session :exports both :results code output
+global c_1 beta_1
+c_1 = sqrt(435^2 + 20.3^2)
+beta_1 = atan(20.3/435)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+c_1 =
+  435.4734
+beta_1 =
+    0.0466
+#+end_src
+
+
+Let's start off by calculating $\theta_3$ as described in Section [[sec:setting_r]]
+#+begin_src matlab :exports code :tangle arm_config_params.m :eval never
+function theta_13 = arm_config_params(o_3d)
+    global c_1 beta_1;
+    r = norm(o_3d);
+    alpha = acos((r^2 - (430^2 + c_1^2 +149.1^2))/(-2*430*c_1));
+    theta_3 = [
+        (pi - (alpha + beta_1));  % elbow down
+        (-pi + (alpha - beta_1)); % elbow up
+        ];
+#+end_src
+
+Next, we find $\theta_2$ as described in Section [[sec:setting_k_comp]]
+
+#+begin_src matlab :exports code :tangle arm_config_params.m :eval never
+    h_d = o_3d(3);
+
+    h_1 = [
+        c_1*sin(pi - alpha);  % elbow down
+        -c_1*sin(pi - alpha); % elbow up
+        ];
+        
+    l_1 = sqrt(r^2 - 149.1^2);
+    Theta_elev = asin(h_1'/l_1); % [elbow down, elbow up]
+    theta_2 = [
+        % elbow down, elbow up
+        (-asin(h_d/l_1) + Theta_elev);  % shoulder left
+        -(pi - asin(h_d/l_1) + Theta_elev);  % shoulder right
+    ];
+#+end_src
+
+Next, we can find $\theta_1$ as described in Section [[sec:rotating_into_position]]
+#+begin_src matlab :exports code :tangle arm_config_params.m :eval never
+    i_d = o_3d(1);
+    j_d = o_3d(2);
+    l_2 = l_1*cos(theta_2(1,1) - Theta_elev(1,1));
+    Theta_azmt = atan(149.1./l_2);
+
+    theta_1 = [
+        atan2(j_d, i_d) - Theta_azmt;
+        -pi + atan2(j_d, i_d) + Theta_azmt;
+        ];
+#+end_src
+
+Finally, we can assemble all the permutations of the arm parameters:
+#+begin_src matlab :exports code :tangle arm_config_params.m :eval never
+    theta_13 = [
+        theta_1(1) theta_2(1,1) theta_3(1); %shoulder left, elbow up
+        theta_1(1) theta_2(1,2) theta_3(2); %shoulder left, elbow down
+        theta_1(2) theta_2(2,1) theta_3(2); %shoulder right, elbow down
+        theta_1(2) theta_2(2,2) theta_3(1); %shoulder right, elbow up
+        ];
+end
+#+end_src
+
+
+With the arm parameters, we can calculate ${^0C_3}$ as described in Section [[sec:calculating_0c3]]
+
+#+begin_src matlab :exports code :tangle puma_fk.m :eval never
+function [C_d o_d] = puma_fk(q, frame)
+    rows = size(q, 1);
+    q = q';
+    tbl = puma_dh_table(q);
+    T = dh_param_to_matrix(tbl);
+    T = permute(T, [1 2 4 3]);
+    T_i = T(:,:,:,1);
+    for i = 2:frame
+        T_i = pagemtimes(T_i, T(:,:,:,i));
+    end
+
+    S_0 = repmat(eye(4), 1, 1, rows);
+    S_d = pagemtimes(T_i, S_0);
+    C_d = S_d(1:3,1:3,:);
+    o_d = S_d(1:3,4,:);
+end
+#+end_src
+
+#+begin_src matlab :exports code :tangle wrist_base.m :eval never
+function [C_3 o_3] = wrist_base(theta_13)
+    % Dummy values for theta 4 to 6, we only need the first 3
+    % transformation matrices
+    rows = size(theta_13, 1);
+    theta_46 = zeros(rows, 3);
+    q = [theta_13 theta_46];
+    [C_3 o_3] = puma_fk(q, 3);
+    % DH params gives o_3 without the offset to reach the wrist center
+    o_3 = o_3 + 435*C_3(:,3,:);
+end
+#+end_src
+
+
+Testing some values:
+
+#+begin_src matlab :session :exports both :results code output
+o_3d = [(430 + 435) (149.1) (20.3)]
+theta_13 = arm_config_params(o_3d)
+[~, o_3c] = wrist_base(theta_13)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+o_3d =
+  865.0000  149.1000   20.3000
+theta_13 =
+   -0.0000    0.0000    0.0000
+   -0.0000   -0.0469   -0.0933
+   -2.8002   -3.1416   -0.0933
+   -2.8002   -3.0947    0.0000
+o_3c(:,:,1) =
+  865.0000
+  149.1000
+   20.3000
+o_3c(:,:,2) =
+  865.0000
+  149.1000
+   20.3000
+o_3c(:,:,3) =
+  865.0000
+  149.1000
+   20.3000
+o_3c(:,:,4) =
+  865.0000
+  149.1000
+   20.3000
+#+end_src
+
+#+begin_src matlab :session :exports both :results code output
+o_3d = [800 100 10]
+theta_13 = arm_config_params(o_3d)
+[~, o_3c] = wrist_base(theta_13)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+o_3d =
+   800   100    10
+theta_13 =
+   -0.0617    0.4041    0.7812
+   -0.0617   -0.4293   -0.8745
+   -2.8312   -3.5457   -0.8745
+   -2.8312   -2.7123    0.7812
+o_3c(:,:,1) =
+  800.0000
+  100.0000
+   10.0000
+o_3c(:,:,2) =
+  800.0000
+  100.0000
+   10.0000
+o_3c(:,:,3) =
+  800.0000
+  100.0000
+   10.0000
+o_3c(:,:,4) =
+  800.0000
+  100.0000
+   10.0000
+#+end_src
+
+We see that the values appear to be correct.
+
+Next, let's write a function to calculate the wrist parameters as described in Section [[sec:calculating_wrist_params]].
+
+#+begin_src matlab :exports code :tangle wrist_params.m :eval never
+function theta_46 = wrist_params(C_3, C_6)
+    i_3 = C_3(:,1);
+    j_3 = C_3(:,2);
+    k_3 = C_3(:,3);
+    i_6 = C_6(:,1);
+    j_6 = C_6(:,2);
+    k_6 = C_6(:,3);
+
+    k_3xk_6 = cross(k_3, k_6);
+
+    if any(k_3xk_6)
+        % k_3 and k_6 are not parallel
+        k_4 = k_3xk_6/norm(k_3xk_6);
+    else
+        % There are infinite solutions, but let's just pick one for simplicity
+        k_4 = i_3;
+    end
+
+    theta_46 = [do_calc(k_4); do_calc(-k_4)];
+
+    function m_theta_46 = do_calc(m_k_4)
+        theta_4 = -sign(m_k_4'*i_3)*...
+                abs(2*atan(norm(m_k_4 - j_3)/norm(m_k_4 + j_3)));
+
+        theta_5 = -sign(k_6'*cross(m_k_4,k_3))*...
+                abs(2*atan(norm(k_6 - k_3)/norm(k_6 + k_3)));
+
+        theta_6 = sign(m_k_4'*i_6)*...
+                abs(2*atan(norm(j_6 - m_k_4)/norm(j_6 + m_k_4)));
+        m_theta_46 = [theta_4 theta_5 theta_6];
+    end
+end
+#+end_src
+
+This only computes the wrist values for a single $\munderbar{C}_3$, let's write a function to combine all the possible $\munderbar{C}_3$:
+#+begin_src matlab :exports code :tangle wrist_params_combined.m :eval never
+function theta_46_c = wrist_params_combined(C_3, C_6)
+    theta_46_c = [];
+    for i = 0:(size(C_3, 3) - 1)
+        theta_46_c(2*i+1:2*i+2,1:3) = wrist_params(C_3(:,:,i+1), C_6);
+    end
+end
+#+end_src
+
+Combining all of our parameters:
+
+#+begin_src matlab :exports code :tangle combine_params.m :eval never
+function q = combine_params(theta_13, theta_46)
+    % Each set of q is a row vector
+    theta_13 = repelem(theta_13, 2, 1);
+    q = [theta_13 theta_46];
+end
+#+end_src
+
+Writing a function to wrap everything together and discarding the invalid positions: 
+
+#+begin_src matlab :exports code :tangle puma_ik.m :eval never
+function q = puma_ik(o_d, j_d, k_d)
+    C_d = desired_frame(j_d, k_d);
+    o_3 = wrist_center_location(o_d, C_d);
+    theta_13 = arm_config_params(o_3);
+    [C_3 o_3] = wrist_base(theta_13);
+    theta_46_c = wrist_params_combined(C_3, C_d);
+    q = combine_params(theta_13, theta_46_c);
+
+    q = q(find(deg2rad(-160) <= q(:,1)),:);
+    q = q(find(q(:,1) <= deg2rad(160)),:);
+    q = q(find(deg2rad(-225) <= q(:,2)),:);
+    q = q(find(q(:,2) <= deg2rad(45)),:);
+    q = q(find(deg2rad(-135) <= q(:,3)),:);
+    q = q(find(q(:,3) <= deg2rad(135)),:);
+    q = q(find(deg2rad(-110) <= q(:,4)),:);
+    q = q(find(q(:,4) <= deg2rad(170)),:);
+    q = q(find(deg2rad(-100) <= q(:,5)),:);
+    q = q(find(q(:,5) <= deg2rad(100)),:);
+    q = q(find(deg2rad(-266) <= q(:,6)),:);
+    q = q(find(q(:,6) <= deg2rad(266)),:);
+
+    % Complex values mean the target pose is unreachable
+    q = q(imag(sum(q, 2))==0,:);
+end
+#+end_src
+
+**** Testing
+Testing it on the poses from Exercise 1:
+#+begin_src matlab :session :exports both :results code output
+q = [0 0 0 0 0 0];
+[C_d o_d] = puma_fk(q, 6)
+j_d = C_d(:,2);
+k_d = C_d(:,3);
+q = puma_ik(o_d, j_d, k_d)
+[C_6 o_6] = puma_fk(q, 6)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+C_d =
+    0.0000   -0.0000    1.0000
+    0.0000   -1.0000   -0.0000
+    1.0000    0.0000   -0.0000
+o_d =
+  925.0000
+  149.1000
+   20.3000
+q =
+   -0.0000    0.0000    0.0000    0.0280    0.0000   -0.0280
+   -0.0000   -0.0469   -0.0933   -0.0000   -0.0463    0.0000
+C_6(:,:,1) =
+    0.0000   -0.0000    1.0000
+    0.0000   -1.0000   -0.0000
+    1.0000    0.0000   -0.0000
+C_6(:,:,2) =
+    0.0000   -0.0000    1.0000
+    0.0000   -1.0000   -0.0000
+    1.0000    0.0000   -0.0000
+o_6(:,:,1) =
+  925.0000
+  149.1000
+   20.3000
+o_6(:,:,2) =
+  925.0000
+  149.1000
+   20.3000
+#+end_src
+
+#+begin_src matlab :session :exports both :results code output
+q = [0 0 -pi/2 0 0 pi];
+[C_d o_d] = puma_fk(q, 6)
+j_d = C_d(:,2);
+k_d = C_d(:,3);
+q = puma_ik(o_d, j_d, k_d)
+[C_6 o_6] = puma_fk(q, 6)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+C_d =
+   -1.0000   -0.0000         0
+   -0.0000    1.0000   -0.0000
+    0.0000   -0.0000   -1.0000
+o_d =
+  450.3000
+  149.1000
+ -495.0000
+q =
+   -0.0000         0   -1.5708    0.0000    0.0000    3.1416
+   -2.5021   -3.1416    1.4775    0.0000   -0.0933    0.6395
+C_6(:,:,1) =
+   -1.0000    0.0000   -0.0000
+    0.0000    1.0000   -0.0000
+    0.0000   -0.0000   -1.0000
+C_6(:,:,2) =
+   -1.0000   -0.0000    0.0000
+         0    1.0000   -0.0000
+   -0.0000   -0.0000   -1.0000
+o_6(:,:,1) =
+  450.3000
+  149.1000
+ -495.0000
+o_6(:,:,2) =
+  450.3000
+  149.1000
+ -495.0000
+#+end_src
+
+#+begin_src matlab :session :exports both :results code output
+q = [pi/4 -pi/4 pi/4 0 -pi/6 pi/4];
+[C_d o_d] = puma_fk(q, 6)
+j_d = C_d(:,2);
+k_d = C_d(:,3);
+q = puma_ik(o_d, j_d, k_d);
+[C_6 o_6] = puma_fk(q, 6);
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+C_d =
+    0.0670    0.9330   -0.3536
+   -0.9330   -0.0670   -0.3536
+   -0.3536    0.3536    0.8660
+o_d =
+   74.0029
+  284.8621
+  791.0174
+#+end_src
+
+#+begin_src matlab :session :exports both :results code output
+q
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+q =
+    0.7854   -0.7854    0.7854         0   -0.5236    0.7854
+    0.7854   -0.7854    0.7854         0    0.5236   -2.3562
+    0.7854   -1.6230   -0.8787    0.0000   -1.3500    0.7854
+   -1.3886   -2.3562   -0.8787    2.0264   -0.4763    0.9535
+   -1.3886   -2.3562   -0.8787   -1.1152    0.4763   -2.1881
+   -1.3886   -1.5186    0.7854    2.6613   -1.0999    0.1186
+   -1.3886   -1.5186    0.7854   -0.4803    1.0999   -3.0230
+#+end_src
+
+#+begin_src matlab :session :exports both :results code output
+C_6
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+C_6(:,:,1) =
+    0.0670    0.9330   -0.3536
+   -0.9330   -0.0670   -0.3536
+   -0.3536    0.3536    0.8660
+C_6(:,:,2) =
+   -0.0670   -0.9330    0.3536
+    0.9330    0.0670    0.3536
+   -0.3536    0.3536    0.8660
+C_6(:,:,3) =
+    0.0670    0.9330   -0.3536
+   -0.9330   -0.0670   -0.3536
+   -0.3536    0.3536    0.8660
+C_6(:,:,4) =
+    0.0670    0.9330   -0.3536
+   -0.9330   -0.0670   -0.3536
+   -0.3536    0.3536    0.8660
+C_6(:,:,5) =
+    0.0670    0.9330   -0.3536
+   -0.9330   -0.0670   -0.3536
+   -0.3536    0.3536    0.8660
+C_6(:,:,6) =
+    0.0670    0.9330   -0.3536
+   -0.9330   -0.0670   -0.3536
+   -0.3536    0.3536    0.8660
+C_6(:,:,7) =
+    0.0670    0.9330   -0.3536
+   -0.9330   -0.0670   -0.3536
+   -0.3536    0.3536    0.8660
+#+end_src
+
+#+begin_src matlab :session :exports both :results code output
+o_6
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+o_6(:,:,1) =
+   74.0029
+  284.8621
+  791.0174
+o_6(:,:,2) =
+  116.4293
+  327.2886
+  791.0174
+o_6(:,:,3) =
+   74.0029
+  284.8621
+  791.0174
+o_6(:,:,4) =
+   74.0029
+  284.8621
+  791.0174
+o_6(:,:,5) =
+   74.0029
+  284.8621
+  791.0174
+o_6(:,:,6) =
+   74.0029
+  284.8621
+  791.0174
+o_6(:,:,7) =
+   74.0029
+  284.8621
+  791.0174
+#+end_src
+
+Checking a few other positions
+#+begin_src matlab :session :exports both :results code output
+o_d = [800; 200; 10];
+k_d = [0; 1; 0];
+j_d = [1; 0; 0];
+q = puma_ik(o_d, j_d, k_d);
+[C_6 o_6] = puma_fk(q, 6);
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+#+end_src
+
+#+begin_src matlab :session :exports both :results code output
+q
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+q =
+   -0.0114    0.3864    0.7459   -1.5668   -1.5815    1.9303
+   -0.0114    0.3864    0.7459    1.5748    1.5815   -1.2113
+   -0.0114   -0.4114   -0.8391   -1.5755   -1.5812    1.1431
+   -0.0114   -0.4114   -0.8391    1.5661    1.5812   -1.9985
+   -2.7837   -3.5280   -0.8391    1.4086   -1.2503    2.0498
+   -2.7837   -3.5280   -0.8391   -1.7330    1.2503   -1.0918
+   -2.7837   -2.7302    0.7459    1.6929   -1.2336    1.2155
+   -2.7837   -2.7302    0.7459   -1.4487    1.2336   -1.9261
+#+end_src
+
+#+begin_src matlab :session :exports both :results code output
+o_6
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+o_6(:,:,1) =
+  800.0000
+  200.0000
+   10.0000
+o_6(:,:,2) =
+  800.0000
+  200.0000
+   10.0000
+o_6(:,:,3) =
+  800.0000
+  200.0000
+   10.0000
+o_6(:,:,4) =
+  800.0000
+  200.0000
+   10.0000
+o_6(:,:,5) =
+  800.0000
+  200.0000
+   10.0000
+o_6(:,:,6) =
+  800.0000
+  200.0000
+   10.0000
+o_6(:,:,7) =
+  800.0000
+  200.0000
+   10.0000
+o_6(:,:,8) =
+  800.0000
+  200.0000
+   10.0000
+#+end_src
+
+#+begin_src matlab :session :exports both :results code output
+C_6
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+C_6(:,:,1) =
+         0    1.0000    0.0000
+    0.0000   -0.0000    1.0000
+    1.0000   -0.0000   -0.0000
+C_6(:,:,2) =
+         0    1.0000    0.0000
+    0.0000   -0.0000    1.0000
+    1.0000   -0.0000   -0.0000
+C_6(:,:,3) =
+    0.0000    1.0000   -0.0000
+    0.0000    0.0000    1.0000
+    1.0000   -0.0000   -0.0000
+C_6(:,:,4) =
+    0.0000    1.0000    0.0000
+   -0.0000   -0.0000    1.0000
+    1.0000         0    0.0000
+C_6(:,:,5) =
+    0.0000    1.0000    0.0000
+   -0.0000    0.0000    1.0000
+    1.0000    0.0000    0.0000
+C_6(:,:,6) =
+    0.0000    1.0000   -0.0000
+   -0.0000    0.0000    1.0000
+    1.0000   -0.0000    0.0000
+C_6(:,:,7) =
+   -0.0000    1.0000   -0.0000
+    0.0000   -0.0000    1.0000
+    1.0000    0.0000   -0.0000
+C_6(:,:,8) =
+    0.0000    1.0000    0.0000
+    0.0000   -0.0000    1.0000
+    1.0000   -0.0000    0.0000
+#+end_src
+
+#+begin_src matlab :session :exports both :results code output
+o_d = [-400; 300; 300];
+k_d = [0; -1; 0];
+j_d = [1; 0; 0];
+q = puma_ik(o_d, j_d, k_d)
+[C_6 o_6] = puma_fk(q, 6)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+q =
+   -0.4521   -3.4308   -1.6633    2.0153   -1.6563   -0.1774
+   -0.4521   -3.4308   -1.6633   -1.1263    1.6563    2.9642
+C_6(:,:,1) =
+   -0.0000    1.0000   -0.0000
+    0.0000   -0.0000   -1.0000
+   -1.0000   -0.0000   -0.0000
+C_6(:,:,2) =
+   -0.0000    1.0000    0.0000
+    0.0000    0.0000   -1.0000
+   -1.0000   -0.0000   -0.0000
+o_6(:,:,1) =
+ -400.0000
+  300.0000
+  300.0000
+o_6(:,:,2) =
+ -400.0000
+  300.0000
+  300.0000
+#+end_src
+
+
+We can also check values that are outside of the workspace:
+#+begin_src matlab :session :exports both :results code output
+o_d = [9999; 9999; 9999];
+k_d = [0; -1; 0];
+j_d = [1; 0; 0];
+q = puma_ik(o_d, j_d, k_d)
+[C_6 o_6] = puma_fk(q, 6)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+q =
+  0x6 empty double matrix
+C_6 =
+  3x3x0 empty double array
+o_6 =
+  3x1x0 empty double array
+#+end_src
+
+As expected, no solutions are found.
