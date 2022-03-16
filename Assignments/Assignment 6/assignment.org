@@ -1,0 +1,676 @@
+#+TITLE: MECH 464 Homework Assignment 6
+#+AUTHOR: Jasper Chan - 37467164 @@latex:\\@@ jasperchan515@gmail.com
+
+#+OPTIONS: toc:nil H:5 num:t
+
+
+#+LATEX_HEADER: \definecolor{bg}{rgb}{0.95,0.95,0.95}
+#+LATEX_HEADER: \setminted{frame=single,bgcolor=bg,samepage=true}
+#+LATEX_HEADER: \setlength{\parindent}{0pt}
+#+LATEX_HEADER: \sisetup{per-mode=fraction}
+#+LATEX_HEADER: \usepackage[shellescape]{gmp}
+#+LATEX_HEADER: \usepackage{gauss}
+#+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{svg}
+#+LATEX_HEADER: \usepackage{cancel}
+#+LATEX_HEADER: \usepackage{amssymb}
+#+LATEX_HEADER: \usepackage{accents}
+#+LATEX_HEADER: \usepackage{titlesec}
+#+LATEX_HEADER: \usepackage{mathtools, nccmath}
+#+LATEX_HEADER: \newcommand{\Lwrap}[1]{\left\{#1\right\}}
+#+LATEX_HEADER: \newcommand{\Lagr}[1]{\mathcal{L}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Lagri}[1]{\mathcal{L}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztrans}[1]{\mathcal{Z}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztransi}[1]{\mathcal{Z}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\ZOH}[1]{\text{ZOH}\left(#1\right)}
+#+LATEX_HEADER: \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+#+LATEX_HEADER: \DeclareMathOperator{\sign}{sign}
+#+LATEX_HEADER: \DeclareMathOperator{\arctantwo}{arctan2}
+#+LATEX_HEADER: \makeatletter \AtBeginEnvironment{minted}{\dontdofcolorbox} \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}} \makeatother
+#+LATEX_HEADER: \titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+#+LATEX_HEADER: \titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{0.5em}
+#+LATEX_HEADER: \setcounter{secnumdepth}{5}
+#+LATEX_HEADER: \newcommand\munderbar[1]{\underaccent{\bar}{#1}}
+#+LATEX_HEADER: \newcommand\dmunderbar[1]{\munderbar{\munderbar{#1}}}
+#+LATEX_HEADER: \newcommand\mundertilde[1]{\underaccent{\tilde}{#1}}
+#+LATEX_HEADER: \newcommand{\norm}[1]{\| #1 \|}
+#+LATEX_HEADER: \newcommand*\phantomrel[1]{\mathrel{\phantom{#1}}}% My preferred typesetting
+#+LATEX_HEADER: \newcommand\scalemath[2]{\scalebox{#1}{\mbox{\ensuremath{\displaystyle #2}}}}
+
+* Exercise 1: Camera calibration
+** Task 1: Calibration
+We want to find the camera intrinsic matrix of a particular camera:
+\begin{align*}
+C
+&=
+\begin{bmatrix}
+    f_x & 0   & u_0 \\
+    0   & f_y & v_0 \\
+    0   & 0   & 1   \\
+\end{bmatrix}
+\end{align*}
+
+We can do this by running a camera calibration in MATLAB.
+
+First, we need a checkerboard[fn:optimalcal] with a known grid size (we will choose \SI{25}{\milli\meter}), this can be found on the page with Figure \ref{fig:grid}.
+
+Printing it and verifying it's dimensions in Figure [[fig:checkerboard_verify]] [fn:verify]:
+
+
+#+CAPTION: Printout of checkerboard with grid size \SI{25}{\milli\meter}
+#+ATTR_LATEX: :placement [H]
+#+NAME: fig:checkerboard_verify
+[[file:checkerboard_verify.jpg]]
+
+[fn:optimalcal] For optimal calibration, the one side of the grid should have an even amount of squares, and the other should be odd.
+
+
+
+
+[fn:verify] While the checkerboard in Figure \ref{fig:grid} is defined to have a grid size of exactly \SI{25}{\milli\meter}, the page had to be printed at approximately $\SI{100.4467}{\percent}$ scale on my printer to achieve correct scaling
+
+
+
+
+
+
+
+\newpage
+\newgeometry{left=0.5in,right=0.5in,bottom=1in,top=1in}
+\begin{figure}
+\begin{center}
+\begin{mpost*}
+beginfig(1);
+$ := 1;
+% Dimensions
+numeric l[];
+l1 = 25mm;
+% Note: for optimal calibration one side length should be even, the other odd
+w = 7;
+h = 8;
+%
+for i=1 step 1 until w:
+    for j=1 step 1 until h:
+        if odd j:
+            if odd i:
+                fill unitsquare scaled l1 shifted (i*(l1), j*(l1)) withcolor black;
+            fi;
+        else:
+            if not odd i:
+                fill unitsquare scaled l1 shifted (i*(l1), j*(l1)) withcolor black;
+            fi;
+        fi;
+    endfor;
+endfor;
+endfig;          
+\end{mpost*}
+\end{center}
+\caption{Checkerboard grid with grid size \SI{25}{\milli\meter}}
+\label{fig:grid}
+\end{figure}
+\newpage
+\restoregeometry
+
+Now we need many pictures of our calibration grid [fn:pictures].
+
+
+Once we have our pictures, we can run calibration.
+
+Creating a cell array for all of our pictures:
+#+begin_src matlab :tangle camera_cal.m :session :results code output :exports both :eval never-export
+numImages = 27;
+imageFileNames = {};
+
+for idx = 1:numImages
+    imageFileNames{idx} = strrep(...
+        'camera_cal/camera_calN.png', 'N', int2str(idx));
+end
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+#+end_src
+
+Detecting the checkerboards in the images:
+#+begin_src matlab :tangle camera_cal.m :session :results code output :exports both :eval never-export
+[imagePoints, boardSize, imagesUsed] = detectCheckerboardPoints(imageFileNames);
+imageFileNames = imageFileNames(imagesUsed);
+boardSize
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+boardSize =
+     7     8
+#+end_src
+
+Checking that all images were detected correctly:
+#+begin_src matlab :tangle camera_cal.m :session :results code output :exports both :eval never-export
+size(imageFileNames, 2)
+numImages == size(imageFileNames, 2)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+ans =
+    27
+ans =
+  logical
+   1
+#+end_src
+
+Getting the size of the images:
+#+begin_src matlab :tangle camera_cal.m :session :results code output :exports both :eval never-export
+originalImage = imread(imageFileNames{1});
+[mrows, ncols, ~] = size(originalImage)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+mrows =
+        1080
+ncols =
+        1920
+#+end_src
+
+Generating the checkerboard points to calibrate against:
+#+begin_src matlab :tangle camera_cal.m :session :results code output :exports both :eval never-export
+squareSize = 25;  % mm
+worldPoints = generateCheckerboardPoints(boardSize, squareSize);
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+#+end_src
+
+Calibrating the camera:
+#+begin_src matlab :tangle camera_cal.m :session :results code output :exports both :eval never-export
+[cameraParams, imagesUsed, estimationErrors] = estimateCameraParameters(...
+    imagePoints, worldPoints, ...
+    'EstimateSkew', false, 'EstimateTangentialDistortion', false, ...
+    'NumRadialDistortionCoefficients', 2, 'WorldUnits', 'millimeters', ...
+    'InitialIntrinsicMatrix', [], 'InitialRadialDistortion', [], ...
+    'ImageSize', [mrows, ncols]);
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+#+end_src
+
+Checking that all images were used in the calibration:
+#+begin_src matlab :tangle camera_cal.m :session :results code output :exports both :eval never-export
+size(imagesUsed, 1)
+numImages == size(imagesUsed, 1)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+ans =
+    27
+ans =
+  logical
+   1
+#+end_src
+
+
+Plotting the mean reprojection error:
+#+begin_src matlab :tangle camera_cal.m :session :results file :exports both :eval never-export
+f_name = 'reprojection_errors.svg';
+fig = figure('visible', 'off',...
+             'Position', [0 0 600 300]);
+showReprojectionErrors(cameraParams);
+saveas(fig, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:reprojection_errors.svg]]
+
+Checking the camera intrinsic matrix:
+#+begin_src matlab :tangle camera_cal.m :session :results code output :exports both :eval never-export
+cameraParams.Intrinsics
+cameraParams.Intrinsics.IntrinsicMatrix
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+ans = 
+  cameraIntrinsics with properties:
+             FocalLength: [1.4820e+03 1.4877e+03]
+          PrincipalPoint: [981.0078 525.0125]
+               ImageSize: [1080 1920]
+        RadialDistortion: [0.0730 -0.4807]
+    TangentialDistortion: [0 0]
+                    Skew: 0
+         IntrinsicMatrix: [3x3 double]
+ans =
+   1.0e+03 *
+    1.4820         0         0
+         0    1.4877         0
+    0.9810    0.5250    0.0010
+#+end_src
+
+** Task 2: Undistorting a Camera Image
+
+
+Using our calibration to undistort an image:
+#+begin_src matlab :tangle camera_cal.m :session :results file :exports both :eval never-export
+f_name = 'undistorted_image.png';
+undistortedImage = undistortImage(originalImage, cameraParams);
+imwrite(undistortedImage, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:undistorted_image.png]]
+
+
+[fn:pictures] Pictures are attached in Appendix [[appendix:ex1images]]
+
+
+* Exercise 2: Operations on Images
+** Task 1: Morphological Operations
+We want to denoise the images in Figure [[fig:speck12]] with morphological operations:
+
+#+ATTR_LATEX: :environment subfig :width 0.4\textwidth,0.4\textwidth :placement [H]
+#+CAPTION: Images to denoise
+#+NAME: fig:speck12
+| [[file:speck1.png]]                                   | [[file:speck2.png]]                                   |
+| Task 1: Image from ~speck1.png~ <<subfig:speck1>> | Task 1: Image from ~speck2.png~ <<subfig:speck2>> |
+
+Looking at Figure [[subfig:speck1]], we can see that random pixels from the source image have been turned white, whereas in Figure [[subfig:speck2]], random pixels have been turned black.
+
+*** Methodology
+
+For the first image, we want to first use erosion to remove the white specks, then dilation to "grow" back the erosion of the desired features[fn:opening].
+For the second image, we want to do the opposite; dilation to fill in the black holes in the letters, then erosion to shrink the letters back down to their original size[fn:closing].
+
+
+[fn:opening] This set of operations is also called opening.
+[fn:closing] This set of operations is also called closing.
+
+
+
+
+
+
+
+*** Structuring Element Choice
+Intuitively, in order to maintain the greatest fidelity, we want to use a circular structuring element, with a radius big enough to reliably remove any undesired features but small enough to maintain desired ones.
+
+However, the assignment requests 3 different structuring element shapes and sizes, so let's create those:
+
+#+begin_src matlab :tangle denoise.m :session :results code output :exports both :eval never-export
+shapes = {'square', 'disk', 'diamond'};
+radii = { 1 2 3 };
+num_shapes = size(shapes, 2);
+num_radii = size(radii, 2);
+n_approx = 0;
+SE = {};
+for i=1:num_shapes
+    for j=1:num_radii
+        if strcmp(shapes{i}, 'disk')
+            se = strel(shapes{i}, radii{j}, n_approx);
+        else
+            se = strel(shapes{i}, radii{j});
+        end
+        SE{i, j} = se;
+    end
+end
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+#+end_src
+
+
+Let's write a function to show each structuring element next to each other:
+
+#+begin_src matlab :tangle create_image_grid.m :session :results file :exports both :eval never
+function img = create_image_grid(imgs, margin)
+max_size = max(...
+    cell2mat(...
+        cellfun(@(c) size(c), imgs, 'UniformOutput', false)),...
+    [], 'all');
+grid_size = [max_size max_size] + 2*margin;
+[rows, cols] = size(imgs);
+img = [];
+for i=1:rows
+    row = [];
+    for j=1:cols
+       c = double(imgs{i, j});
+       pad_size = (grid_size - size(c))/2;
+       c = padarray(c, floor(pad_size), 0.5);
+       if floor(pad_size) ~= pad_size
+           c = padarray(c, [1 1], 0.5, 'post');
+       end
+       row = [row c];
+    end
+    img = [img; row];
+end
+#+end_src
+
+#+begin_src matlab :tangle denoise.m :session :results file :exports both :eval never-export
+f_name = 'morph_shapes.png';
+neighborhoods = cellfun(@(c) c.Neighborhood, SE, 'UniformOutput', false);
+img = create_image_grid(neighborhoods, 1);
+imwrite(img, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:morph_shapes.png]]
+
+*** Denoising
+Now we are ready to denoise our image.
+Note that while it is possible to use ~imerode~ or ~imdilate~ in the correct order to achieve what we want, we can also just call ~imclose~ or ~imopen~ to do it in one call.
+
+#+begin_src matlab :tangle denoise.m :session :results file :exports both :eval never-export
+f_name = 'speck1_denoised_grid.png';
+speck1 = imread('speck1.png');
+speck1_denoised = cellfun(@(c) imclose(speck1, c), SE, 'UniformOutput', false);
+img = create_image_grid(speck1_denoised, 10);
+imwrite(img, 'speck1_denoised_grid.png');
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:speck1_denoised_grid.png]]
+
+#+begin_src matlab :tangle denoise.m :session :results file :exports both :eval never-export
+f_name = 'speck2_denoised_grid.png';
+speck2 = imread('speck2.png');
+speck2_denoised = cellfun(@(c) imopen(speck2, c), SE, 'UniformOutput', false);
+img = create_image_grid(speck2_denoised, 10);
+imwrite(img, 'speck2_denoised_grid.png');
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:speck2_denoised_grid.png]]
+
+As expected, with increasing radius, we get a stronger denoising effect, with the tradeoff of less detail in the final image[fn:square].
+
+[fn:square] The radius 1 square structuring element does nothing since it is a single pixel
+
+
+
+
+*** Checking Image Quality
+Let's load our reference image and check the image quality using PSNR and SSIM.
+
+#+begin_src matlab :tangle denoise.m :session :results code output :exports both :eval never-export
+% speck0.png is a grayscale image for some reason
+speck0 = double(imread('speck0.png'))/255;
+[PSNR1, SNR1] = cellfun(...
+    @(c) psnr(double(c), speck0), speck1_denoised, 'UniformOutput', false)
+[PSNR2, SNR2] = cellfun(...
+    @(c) psnr(double(c), speck0), speck2_denoised, 'UniformOutput', false)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+PSNR1 =
+  3x3 cell array
+    {[13.1118]}    {[19.6616]}    {[24.0589]}
+    {[20.2542]}    {[21.3518]}    {[21.2268]}
+    {[20.2542]}    {[21.3518]}    {[20.9340]}
+SNR1 =
+  3x3 cell array
+    {[ 4.7522]}    {[11.3021]}    {[15.6994]}
+    {[11.8946]}    {[12.9923]}    {[12.8673]}
+    {[11.8946]}    {[12.9923]}    {[12.5745]}
+PSNR2 =
+  3x3 cell array
+    {[ 7.2685]}    {[20.6007]}    {[25.7945]}
+    {[21.9977]}    {[21.3776]}    {[19.6182]}
+    {[21.9977]}    {[21.3776]}    {[19.5990]}
+SNR2 =
+  3x3 cell array
+    {[-1.0911]}    {[12.2411]}    {[17.4349]}
+    {[13.6382]}    {[13.0181]}    {[11.2587]}
+    {[13.6382]}    {[13.0181]}    {[11.2394]}
+#+end_src
+
+#+begin_src matlab :tangle denoise.m :session :results code output :exports both :eval never-export
+[SSIMVAL1, SSIMMAP1] = cellfun(...
+    @(c) ssim(double(c), speck0), speck1_denoised, 'UniformOutput', false);
+[SSIMVAL2, SSIMMAP2] = cellfun(...
+    @(c) ssim(double(c), speck0), speck2_denoised, 'UniformOutput', false);
+SSIMVAL1
+SSIMVAL2
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+SSIMVAL1 =
+  3x3 cell array
+    {[0.8471]}    {[0.9157]}    {[0.9691]}
+    {[0.9273]}    {[0.9474]}    {[0.9492]}
+    {[0.9273]}    {[0.9474]}    {[0.9457]}
+SSIMVAL2 =
+  3x3 cell array
+    {[0.1635]}    {[0.8631]}    {[0.9776]}
+    {[0.9307]}    {[0.9485]}    {[0.9394]}
+    {[0.9307]}    {[0.9485]}    {[0.9361]}
+#+end_src
+
+Let's also show the local SSIM values:
+#+begin_src matlab :tangle denoise.m :session :results file :exports both :eval never-export
+f_name = 'speck1_ssim.png';
+img = create_image_grid(SSIMMAP1, 10);
+imwrite(img, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:speck1_ssim.png]]
+
+
+#+begin_src matlab :tangle denoise.m :session :results file :exports both :eval never-export
+f_name = 'speck2_ssim.png';
+img = create_image_grid(SSIMMAP2, 10);
+imwrite(img, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:speck2_ssim.png]]
+
+* Exercise 3: Image Segmentation
+** Task 1: Color Classification
+
+We want to use K-means clustering to segment the shapes of Figure [[fig:colour_shapes]] into its five constituent colors.
+
+#+CAPTION: ~colour_shapes.png~ Image for color classification.
+#+ATTR_LATEX: :placement [H]
+#+NAME: fig:colour_shapes
+[[file:colour_shapes.png]]
+
+Loading the image in and converting it to the L*a*b* color space:
+#+begin_src matlab :tangle image_segmentation.m :session :results code output :exports both :eval never-export
+colour_shapes = imread('colour_shapes.png');
+lab = rgb2lab(colour_shapes);
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+#+end_src
+
+Segmenting the image via K-means:
+#+begin_src matlab :tangle image_segmentation.m :session :results code output :exports both :eval never-export
+[L, centers] = imsegkmeans(im2single(lab), 5);
+groups = unique(L)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+groups =
+  5x1 uint8 column vector
+   1
+   2
+   3
+   4
+   5
+#+end_src
+
+Creating the binary images:
+#+begin_src matlab :tangle image_segmentation.m :session :results file :exports both :eval never-export
+f_name = 'colour_shapes_segmented.png';
+imgs = {}
+num_groups = size(groups, 1);
+for i=1:num_groups
+    imgs{i} = L == groups(i);
+end
+if mod(num_groups, 2)
+    imgs{num_groups + 1} = [0.5];
+end
+imgs = reshape(imgs, 2, []);
+
+img = create_image_grid(imgs, 10);
+imwrite(img, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:colour_shapes_segmented.png]]
+
+** Task 2: Spatial Sets
+Calculating the connected components in the red image and creating a label matrix:
+#+begin_src matlab :tangle image_segmentation.m :session :results code output :exports both :eval never-export
+red_shapes = L == 2;
+CC = bwconncomp(red_shapes)
+labels = labelmatrix(CC);
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+CC = 
+  struct with fields:
+    Connectivity: 8
+       ImageSize: [2200 1700]
+      NumObjects: 8
+    PixelIdxList: {1x8 cell}
+#+end_src
+
+
+Overlaying the labels:
+#+begin_src matlab :tangle image_segmentation.m :session :results file :exports both :eval never-export
+f_name = 'red_shapes_labelled.png';
+img = labeloverlay(im2single(red_shapes), labels);
+imwrite(img, f_name);
+ans = f_name;
+#+end_src
+
+#+RESULTS:
+[[file:red_shapes_labelled.png]]
+
+
+** Color Classification with Camera Image
+
+An image of ~colour_shapes.png~ taken from the camera from Exercise 1 can be seen in Figure [[fig:colour_shapes_input]]
+
+#+CAPTION: Image of ~colour_shapes.png~ printed on a piece of paper
+#+ATTR_LATEX: :placement [H]
+#+NAME: fig:colour_shapes_input
+[[file:colour_shapes_input.png]]
+
+Loading the image in and converting it to the L*a*b* color space:
+#+begin_src matlab :tangle image_segmentation.m :session :results code output :exports both :eval never-export
+colour_shapes_input = imread('colour_shapes_input.png');
+lab = rgb2lab(colour_shapes_input);
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+#+end_src
+
+Segmenting the image via K-means:
+#+begin_src matlab :tangle image_segmentation.m :session :results code output :exports both :eval never-export
+% 9 groups appears to be the minimum to separate out all the colors
+[L, centers] = imsegkmeans(im2single(lab), 9);
+groups = unique(L)
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+groups =
+  9x1 uint8 column vector
+   1
+   2
+   3
+   4
+   5
+   6
+   7
+   8
+   9
+#+end_src
+
+
+#+begin_src matlab :tangle image_segmentation.m :session :results file :exports both :eval never-export
+f_name = 'colour_shapes_input_segmented.png';
+imgs = {}
+num_groups = size(groups, 1);
+for i=1:num_groups
+    imgs{i} = L == groups(i);
+end
+while mod(size(imgs, 2), 3)
+    imgs{num_groups + 1} = [0.5];
+end
+imgs = reshape(imgs, [], 3);
+
+img = create_image_grid(imgs, 10);
+imwrite(img, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:colour_shapes_input_segmented.png]]
+
+Our desired image is then:
+#+begin_src matlab :tangle image_segmentation.m :session :results file :exports both :eval never-export
+f_name = 'red_shapes_camera.png';
+red_shapes = L == 6;
+imwrite(red_shapes, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:red_shapes_camera.png]]
+
+
+
+\appendix
+* Exercise 1 Images
+<<appendix:ex1images>>
+
+Images taken with the Open Camera app on a Oneplus 6 at $1920 \times 1080$ pixels
+
+[[file:camera_cal/camera_cal1.png]]
+[[file:camera_cal/camera_cal2.png]]
+[[file:camera_cal/camera_cal3.png]]
+[[file:camera_cal/camera_cal4.png]]
+[[file:camera_cal/camera_cal5.png]]
+[[file:camera_cal/camera_cal6.png]]
+[[file:camera_cal/camera_cal7.png]]
+[[file:camera_cal/camera_cal8.png]]
+[[file:camera_cal/camera_cal9.png]]
+[[file:camera_cal/camera_cal10.png]]
+[[file:camera_cal/camera_cal11.png]]
+[[file:camera_cal/camera_cal12.png]]
+[[file:camera_cal/camera_cal13.png]]
+[[file:camera_cal/camera_cal14.png]]
+[[file:camera_cal/camera_cal15.png]]
+[[file:camera_cal/camera_cal16.png]]
+[[file:camera_cal/camera_cal17.png]]
+[[file:camera_cal/camera_cal18.png]]
+[[file:camera_cal/camera_cal19.png]]
+[[file:camera_cal/camera_cal20.png]]
+[[file:camera_cal/camera_cal21.png]]
+[[file:camera_cal/camera_cal22.png]]
+[[file:camera_cal/camera_cal23.png]]
+[[file:camera_cal/camera_cal24.png]]
+[[file:camera_cal/camera_cal25.png]]
+[[file:camera_cal/camera_cal26.png]]
+[[file:camera_cal/camera_cal27.png]]
