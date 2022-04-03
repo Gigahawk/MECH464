@@ -1,0 +1,14 @@
+!feedforward.pdf
+!pendulum_coords.pdf
+!JointSpaceControl.mdl
+!TaskSpaceControl.mdl
+exercise3.svg
+exercise3_fixed.svg
+task_space_control.svg
+task_space_control_fixed.svg
+no_torque*.svg
+stiffness*.svg
+skew.m
+symbolic2latex.m
+robot_jacobian.m
+plot_trajectory.m

@@ -1,0 +1,1829 @@
+#+TITLE: MECH 464 Homework Assignment 7
+#+AUTHOR: Jasper Chan - 37467164 @@latex:\\@@ jasperchan515@gmail.com
+
+#+OPTIONS: toc:nil H:5 num:t
+
+
+#+LATEX_HEADER: \definecolor{bg}{rgb}{0.95,0.95,0.95}
+#+LATEX_HEADER: \setminted{frame=single,bgcolor=bg,samepage=true}
+#+LATEX_HEADER: \setlength{\parindent}{0pt}
+#+LATEX_HEADER: \sisetup{per-mode=fraction}
+#+LATEX_HEADER: \usepackage[shellescape]{gmp}
+#+LATEX_HEADER: \usepackage{gauss}
+#+LATEX_HEADER: \usepackage{float}
+#+LATEX_HEADER: \usepackage{svg}
+#+LATEX_HEADER: \usepackage{cancel}
+#+LATEX_HEADER: \usepackage{amssymb}
+#+LATEX_HEADER: \usepackage{accents}
+#+LATEX_HEADER: \usepackage{titlesec}
+#+LATEX_HEADER: \usepackage{mathtools, nccmath}
+#+LATEX_HEADER: \newcommand{\Lwrap}[1]{\left\{#1\right\}}
+#+LATEX_HEADER: \newcommand{\Lagr}[1]{\mathcal{L}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Lagri}[1]{\mathcal{L}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztrans}[1]{\mathcal{Z}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\Ztransi}[1]{\mathcal{Z}^{-1}\Lwrap{#1}}
+#+LATEX_HEADER: \newcommand{\ZOH}[1]{\text{ZOH}\left(#1\right)}
+#+LATEX_HEADER: \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+#+LATEX_HEADER: \DeclareMathOperator{\sign}{sign}
+#+LATEX_HEADER: \DeclareMathOperator{\arctantwo}{arctan2}
+#+LATEX_HEADER: \DeclareMathOperator{\diag}{diag}
+#+LATEX_HEADER: \makeatletter \AtBeginEnvironment{minted}{\dontdofcolorbox} \def\dontdofcolorbox{\renewcommand\fcolorbox[4][]{##4}} \makeatother
+#+LATEX_HEADER: \titleformat{\paragraph}[hang]{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+#+LATEX_HEADER: \titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{0.5em}
+#+LATEX_HEADER: \setcounter{secnumdepth}{5}
+#+LATEX_HEADER: \newcommand\munderbar[1]{\underaccent{\bar}{#1}}
+#+LATEX_HEADER: \newcommand\dmunderbar[1]{\munderbar{\munderbar{#1}}}
+#+LATEX_HEADER: \newcommand\mundertilde[1]{\underaccent{\tilde}{#1}}
+#+LATEX_HEADER: \newcommand{\norm}[1]{\| #1 \|}
+#+LATEX_HEADER: \newcommand*\phantomrel[1]{\mathrel{\phantom{#1}}}% My preferred typesetting
+#+LATEX_HEADER: \newcommand\scalemath[2]{\scalebox{#1}{\mbox{\ensuremath{\displaystyle #2}}}}
+
+* Exercise 1
+
+** Question 1
+
+Prove the Huygens-Steiner formula (p. 65, equation (26)), Dynamics notes, ~ch6_dynamics.pdf~.
+
+*** Solution
+
+The equation in question is:
+
+\begin{align}
+\dmunderbar{J}_{\mundertilde{o}}
+&=
+\dmunderbar{J}_{\mundertilde{c}}
+-
+m
+[
+  (
+    \mundertilde{c}
+    -
+    \mundertilde{o}
+  ) \times]^2
+\tag{6.26}
+\label{eq:huystein}
+\end{align}
+
+Where:
+\begin{align*}
+\mundertilde{o}                   &\triangleq \text{a point attached to the rigid body} \\
+\mundertilde{c}                   &\triangleq \text{the center of mass of the rigid body} \\
+\dmunderbar{J}_{\mundertilde{o}}  &\triangleq \text{the inertia tensor about the point } \mundertilde{o}
+\end{align*}
+
+We start with the definition for
+$\dmunderbar{J}_{\mundertilde{o}}$:
+
+\begin{align}
+\dmunderbar{J}_{\mundertilde{o}}
+&\triangleq
+\sum_j
+m_j
+[
+  (\mundertilde{x}_j - \mundertilde{o}) \times
+]^T
+[
+  (\mundertilde{x}_j - \mundertilde{o}) \times
+]
+\tag{6.20}
+\label{eq:inertiadef}
+\end{align}
+
+Let
+\begin{align}
+-\mundertilde{o}
+&=
+-\mundertilde{c}
++\mundertilde{c}
+-\mundertilde{o}
+\end{align}
+
+Substituting into Equation \ref{eq:inertiadef}:
+\begin{align}
+\dmunderbar{J}_{\mundertilde{o}}
+&=
+\sum_j
+m_j
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+    +\mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+[
+  (
+    \mundertilde{x}_j
+    -
+    \mundertilde{o}
+    -\mundertilde{c}
+    +\mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+] \\
+&=
+\sum_j
+m_j
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+  +
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+  +
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+] \\
+&=
+\sum_j
+m_j
+\left[
+  [
+    (
+      \mundertilde{x}_j
+      -\mundertilde{c}
+    ) \times
+  ]^T
+    +
+  [
+    (
+      +\mundertilde{c}
+      -\mundertilde{o}
+    ) \times
+  ]^T
+\right]
+\left[
+  [
+    (
+      \mundertilde{x}_j
+      -\mundertilde{c}
+    ) \times
+  ]
+    +
+  [
+    (
+      \mundertilde{c}
+      -\mundertilde{o}
+    ) \times
+  ]
+\right]
+\\
+&=
+\sum_j
+m_j
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+]^T
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+]
+\label{eq:expanded}
+\\
+&\phantomrel{=}
++
+\sum_j
+m_j
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+]^T
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
++
+\sum_j
+m_j
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
++
+\sum_j
+m_j
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]
+\nonumber
+\end{align}
+
+We note that the first term of Equation \ref{eq:expanded} is just $\dmunderbar{J}_{\mundertilde{c}}$:
+
+\begin{align}
+\dmunderbar{J}_{\mundertilde{o}}
+&=
+\dmunderbar{J}_{\mundertilde{c}}
+\\
+&\phantomrel{=}
++
+\sum_j
+m_j
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+]^T
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
++
+\sum_j
+m_j
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
++
+\sum_j
+m_j
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]
+\nonumber
+\end{align}
+
+For the remaining terms, we can pull out all the terms not related to the index $j$:
+\begin{align}
+\dmunderbar{J}_{\mundertilde{o}}
+&=
+\dmunderbar{J}_{\mundertilde{c}}
+\\
+&\phantomrel{=}
++
+\left[
+  \sum_j
+  m_j
+  [
+    (
+      \mundertilde{x}_j
+      -\mundertilde{c}
+    ) \times
+  ]^T
+\right]
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
++
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+\sum_j
+m_j
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
++
+\left[
+  \sum_j
+  m_j
+\right]
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]
+\nonumber
+\end{align}
+
+We can simplify the last term, noting that the sum of all point masses $m_j$ is just the total mass $m$, and that the transpose of a skew matrix is just it's negative:
+
+\begin{align}
+\dmunderbar{J}_{\mundertilde{o}}
+&=
+\dmunderbar{J}_{\mundertilde{c}}
+\\
+&\phantomrel{=}
++
+\left[
+  \sum_j
+  m_j
+  [
+    (
+      \mundertilde{x}_j
+      -\mundertilde{c}
+    ) \times
+  ]^T
+\right]
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
++
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+\sum_j
+m_j
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
++
+m
+\left(
+-
+  [
+    (
+      \mundertilde{c}
+      -\mundertilde{o}
+    ) \times
+  ]
+\right)
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]
+\nonumber
+\\
+&=
+\dmunderbar{J}_{\mundertilde{c}}
+\\
+&\phantomrel{=}
++
+\left[
+  \sum_j
+  m_j
+  [
+    (
+      \mundertilde{x}_j
+      -\mundertilde{c}
+    ) \times
+  ]^T
+\right]
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
++
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+\sum_j
+m_j
+[
+  (
+    \mundertilde{x}_j
+    -\mundertilde{c}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
+-
+m
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^2
+\nonumber
+\end{align}
+
+From the notes, we know that:
+\begin{align}
+\sum_j
+m_j
+(\mundertilde{x}_j - \mundertilde{c})
+&=
+0
+\tag{6.2}
+\end{align}
+
+Which means the remaining terms of our equation are equal to zero:
+
+\begin{align}
+\dmunderbar{J}_{\mundertilde{o}}
+&=
+\dmunderbar{J}_{\mundertilde{c}}
+\\
+&\phantomrel{=}
++
+\left[
+  \left[
+    \cancelto{0}{
+      \sum_j
+      m_j
+      (
+        \mundertilde{x}_j
+        -\mundertilde{c}
+      )
+    }
+  \right] \times
+\right]^T
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]
+\nonumber \\
+&\phantomrel{=}
++
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^T
+\left[
+  \cancelto{0}{
+    \sum_j
+    m_j
+    (
+      \mundertilde{x}_j
+      -\mundertilde{c}
+    )
+  }
+\right]\times
+\nonumber \\
+&\phantomrel{=}
+-
+m
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^2
+\nonumber
+\\
+&=
+\dmunderbar{J}_{\mundertilde{c}}
+-
+m
+[
+  (
+    \mundertilde{c}
+    -\mundertilde{o}
+  ) \times
+]^2
+\end{align}
+
+
+
+
+
+
+
+** Question 2
+
+Obtain a body-coordinates version of Euler's equation (p. 68, equation (52)) from your dynamics notes with the inertia matrix being replaced with its representation in body-attached frame, a constant.
+
+*** Solution
+
+The equation in question is:
+\begin{align}
+\dmunderbar{J}_{\mundertilde{c}}
+\munderbar{\dot{\omega}}
++
+\munderbar{\omega}
+\times
+\dmunderbar{J}_{\mundertilde{c}}
+\munderbar{\omega}
+&=
+\munderbar{\tau}_{\mundertilde{c}}
+\tag{6.52}
+\label{eq:eulers}
+\end{align}
+
+Where $\munderbar{\tau}_{\mundertilde{c}}$ is the torque about $\mundertilde{c}$.
+
+We know that 
+$\dmunderbar{J}_{\mundertilde{c}}$
+can be expressed in terms of body fixed coordinates as:
+\begin{align}
+\dmunderbar{J}_{\mundertilde{c}}
+&\triangleq
+\munderbar{C}
+J_{\mundertilde{c}}
+\munderbar{C}^T
+\tag{6.24}
+\label{eq:inertiacoords}
+\end{align}
+
+Similarly, the torque and angular momentum expressed in the body fixed frame is:
+\begin{align}
+\munderbar{\tau}_{\mundertilde{c}}
+&\triangleq
+\munderbar{C}
+\tau_{\mundertilde{c}}
+\\
+\munderbar{\omega}
+&\triangleq
+\munderbar{C}
+\omega
+\\
+\frac{d}{dt}
+\munderbar{\omega}
+=
+\munderbar{\dot{\omega}}
+&\triangleq
+\munderbar{\dot{C}}
+\omega
++
+\munderbar{C}
+\dot{\omega}
+\end{align}
+
+By definition, a body fixed frame has no motion relative to the body, therefore it's time derivative is zero:
+\begin{align}
+\munderbar{\dot{\omega}}
+&\triangleq
+\munderbar{C}
+\dot{\omega}
+\label{eq:omegacoords}
+\end{align}
+
+
+Substituting Equations \ref{eq:inertiacoords} and \ref{eq:omegacoords} into Equation \ref{eq:eulers}:
+
+\begin{align}
+(
+  \munderbar{C}
+  J_{\mundertilde{c}}
+  \munderbar{C}^T
+)
+(
+  \munderbar{C}
+  \dot{\omega}
+)
++
+(
+  \munderbar{C}
+  \omega
+)
+\times
+(
+  \munderbar{C}
+  J_{\mundertilde{c}}
+  \munderbar{C}^T
+)
+(
+  \munderbar{C}
+  \omega
+)
+&=
+\munderbar{C}
+\tau_{\mundertilde{c}}
+\\
+\munderbar{C}
+J_{\mundertilde{c}}
+\cancelto{I}{
+  \munderbar{C}^T
+  \munderbar{C}
+}
+\dot{\omega}
++
+\munderbar{C}
+\omega
+\times
+\munderbar{C}
+J_{\mundertilde{c}}
+\cancelto{I}{
+  \munderbar{C}^T
+  \munderbar{C}
+}
+\omega
+&=
+\munderbar{C}
+\tau_{\mundertilde{c}}
+\\
+\munderbar{C}
+J_{\mundertilde{c}}
+\dot{\omega}
++
+\munderbar{C}
+\omega
+\times
+\munderbar{C}
+J_{\mundertilde{c}}
+\omega
+&=
+\munderbar{C}
+\tau_{\mundertilde{c}}
+\\
+\munderbar{C}
+(
+  J_{\mundertilde{c}}
+  \dot{\omega}
+  +
+  \omega
+  \times
+  J_{\mundertilde{c}}
+  \omega
+)
+&=
+\munderbar{C}
+\tau_{\mundertilde{c}}
+\\
+J_{\mundertilde{c}}
+\dot{\omega}
++
+\omega
+\times
+J_{\mundertilde{c}}
+\omega
+&=
+\tau_{\mundertilde{c}}
+\end{align}
+
+
+
+* Exercise 2
+
+Consier the pendulum - example 6.3.1 of page 84 of your notes:
+
+#+ATTR_LATEX: :width 0.3\textwidth
+[[file:pendulum.png]]
+
+with Lagrange equation:
+
+\begin{align}
+ml^2\ddot{\theta}
++
+mgl\sin{\theta}
+&=
+\tau
+\label{eq:pendlagrange}
+\tag{6.190}
+\end{align}
+
+
+** Question 1
+
+Obtain a computed torque controller that places the closed-loop poles at $s = -1$.
+
+*** Answer
+
+Mapping the Lagrange equation into the standard robot dynamic model:
+\begin{align}
+\underbrace{
+  D(q)
+  \ddot{q}
+}_{\text{kinetic energy}}
++
+\underbrace{
+  C(q, \dot{q})\dot{q}
+}_{\text{centrifugal and Coriolis term}}
++
+\underbrace{
+  G(q)
+}_{\text{potential energy}}
+&=
+\underbrace{
+  u
+}_{\text{input forces/torques}}
++
+\underbrace{
+  \munderbar{J}^T
+  \begin{bmatrix}
+    \munderbar{f}_n \\ \munderbar{\tau}_n
+  \end{bmatrix}
+}_{\text{external forces/torques on gripper}}
+\tag{7.1}
+\\
+\underbrace{
+  ml^2
+  \ddot{\theta}
+}_{D(q)\ddot{q}}
++
+\underbrace{
+  0
+  \dot{\theta}
+}_{C(q, \dot{q})\dot{q}}
++
+\underbrace{
+  mgl\sin{\theta}
+}_{G(q)}
+&=
+\underbrace{
+  \tau
+}_{u}
++
+\munderbar{J}^T
+\begin{bmatrix}
+  \munderbar{f}_n \\ \munderbar{\tau}_n
+\end{bmatrix}
+\label{eq:pendmodel}
+\end{align}
+
+If we assume zero external forces and torques on the gripper, Equation \ref{eq:pendmodel} simplifies to:
+\begin{align}
+D(q)\ddot{q}
++
+G(q)
+&=
+u
+\end{align}
+
+Solving for $\ddot{q}$:
+\begin{align}
+D(q)\ddot{q}
++
+G(q)
+&=
+u
+\\
+D(q)\ddot{q}
+&=
+u
+-
+G(q)
+\\
+\ddot{q}
+&=
+D(q)^{-1}
+u
+-
+D(q)^{-1}
+G(q)
+\end{align}
+
+Now we can construct our state space model:
+
+\begin{align}
+\frac{d}{dt}x
+=
+\frac{d}{dt}
+\begin{bmatrix}
+q \\ \dot{q}
+\end{bmatrix}
+=
+\begin{bmatrix}
+\dot{q} \\ \ddot{q}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\dot{q} \\
+D(q)^{-1}
+u
+-
+D(q)^{-1}
+G(q)
+\end{bmatrix}
+\label{eq:statespace}
+\end{align}
+
+Let's choose our input as:
+\begin{align}
+u
+&=
+D(q)w + G(q)
+\end{align}
+
+Where $w$ is a PD controller for the desired joint position $q_d$:
+\begin{align}
+w
+&=
+k_p
+(q_d - q)
++
+k_v
+(0 - \dot{q})
+\\
+&=
+k_p
+(q_d - q)
+-
+k_v\dot{q}
+\end{align}
+
+Substituting into Equation \ref{eq:statespace}:
+\begin{align}
+\begin{bmatrix}
+\dot{q} \\ \ddot{q}
+\end{bmatrix}
+&=
+\begin{bmatrix}
+\dot{q} \\
+D(q)^{-1}
+(D(q)w + G(q))
+-
+D(q)^{-1}
+G(q)
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+\dot{q} \\
+\cancelto{I}{D(q)^{-1}D(q)}
+w
++
+\cancelto{0}{
+  D(q)^{-1}G(q)
+  -
+  D(q)^{-1}G(q)
+}
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+\dot{q} \\ w
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+\dot{q} \\
+k_p
+(q_d - q)
+-
+k_v\dot{q}
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+\dot{q} \\
+k_p q_d
+-
+k_p q
+-
+k_v\dot{q}
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+\dot{q} \\
+-
+k_p q
+-
+k_v\dot{q}
+\end{bmatrix}
++
+\begin{bmatrix}
+0 \\ k_p q_d
+\end{bmatrix}
+\end{align}
+
+We notice that our state space model is now linear:
+
+\begin{align}
+\begin{bmatrix}
+\dot{q} \\ \ddot{q}
+\end{bmatrix}
+&=
+\underbrace{
+  \begin{bmatrix}
+   0   &  1 \\
+  -k_p & -k_v
+  \end{bmatrix}
+}_{A}
+\begin{bmatrix}
+q \\ \dot{q}
+\end{bmatrix}
++
+\underbrace{
+  \begin{bmatrix}
+  0 \\ k_p
+  \end{bmatrix}
+}_{B}
+\begin{bmatrix}
+q_d
+\end{bmatrix}
+\end{align}
+
+Converting the model into a transfer function matrix[fn:output]:
+\begin{align}
+\frac{X(s)}{Q_d(s)}
+&=
+\cancelto{I}{C}
+(sI - A)^{-1}
+B
+\\
+&=
+\begin{bmatrix}
+s   & -1 \\
+k_p &  s + k_v
+\end{bmatrix}^{-1}
+\begin{bmatrix}
+0 \\ k_p
+\end{bmatrix}
+\\
+&=
+\frac{1}{s(s + k_v) + k_p}
+\begin{bmatrix}
+ s + k_v & 1 \\
+-k_p     & s
+\end{bmatrix}
+\begin{bmatrix}
+0 \\ k_p
+\end{bmatrix}
+\\
+&=
+\frac{1}{s^2 + k_v s + k_p}
+\begin{bmatrix}
+k_p \\ k_p s
+\end{bmatrix}
+\\
+&=
+\begin{bmatrix}
+\frac{k_p}{s^2 + k_v s + k_p} \\
+\frac{k_p s}{s^2 + k_v s + k_p}
+\end{bmatrix}
+=
+\begin{bmatrix}
+\frac{Q(s)}{Q_d(s)} \\
+\frac{sQ(s)}{Q_d(s)}
+\end{bmatrix}
+\end{align}
+
+If we want to set the poles to $s = -1$, that means the denominator needs to look like:
+\begin{align}
+s^2 + k_v s + k_p
+&=
+(s + 1)^2
+\\
+&=
+s^2 + 2s + 1
+\\
+k_p &= 1 \\
+k_v &= 2
+\end{align}
+
+
+
+[fn:output] We are assuming the output matrix $C$ is just identity
+
+
+
+
+
+
+
+** Question 2
+
+Obtain the torque $\tau_d(t)$ necessary to drive the pendulum along the following trajectory:
+
+\begin{align}
+\theta_d(t)
+&=
+\begin{cases}
+    \frac{\pi}{2}t^2             & \text{if } 0 \leq t \leq 1 \\
+    \pi - \frac{\pi}{2}(t - 2)^2 & \text{if } 1 < t \leq 2 \\
+    \pi                          & \text{if } 2 < t
+\end{cases}
+\end{align}
+
+Obtain the variational equation about the trajectory $\theta_d$ corresponding to the torque $\tau_d$, and draw a diagram of a feedforward position controller about the linearized dynamics.
+
+*** Answer
+
+Assigning coordinate frames to the pendulum:
+
+#+ATTR_LATEX: :width 0.5\textwidth
+[[file:pendulum_coords.pdf]]
+
+For the sake of having consistent notation, let
+$\tau \triangleq \tau_1$,
+$\theta \triangleq \theta_1$, and
+$m \triangleq M_1$.
+
+
+Our frame and origin recursions are:
+
+\begin{align}
+\munderbar{C}_1
+&=
+\munderbar{C}_0 e^{\theta_1 k\times}
+\\
+\mundertilde{o}_1
+&=
+\mundertilde{o}_0
++
+\munderbar{C}_0 e^{\theta_1 k\times}
+\delta_1
+\\
+&=
+\mundertilde{o}_0
++
+\munderbar{C}_0 e^{\theta_1 k\times}
+\begin{bmatrix}
+0 \\ -l \\ 0
+\end{bmatrix}
+\end{align}
+
+Our forward kinematic recursions are:
+\begin{align}
+\munderbar{\omega}_1
+&=
+\cancelto{0}{
+  \munderbar{\omega}_0
+}
++
+\dot{\theta}_1
+\munderbar{k}_0
+\\
+&=
+\dot{\theta}_1
+\munderbar{k}_0
+\\
+\munderbar{\dot{\omega}}_1
+&=
+\cancelto{0}{
+  \munderbar{\dot{\omega}}_0
+}
++
+\ddot{\theta}_1
+\munderbar{k}_0
++
+\dot{\theta}_1
+\cancelto{0}{
+  \munderbar{\omega}_0
+}
+\times
+\munderbar{k}_0
+\\
+&=
+\ddot{\theta}_1
+\munderbar{k}_0
+\\
+\nonumber
+\\
+\mundertilde{\ddot{o}}_1
+&=
+\cancelto{0}{\mundertilde{\ddot{o}}_0}
++
+\munderbar{\dot{\omega}}_1
+\times
+(\mundertilde{o}_1 - \mundertilde{o}_0)
++
+\munderbar{\omega}_1
+\times
+[
+  \munderbar{\omega}_1
+  \times
+  (\mundertilde{o}_1 - \mundertilde{o}_0)
+]
+\\
+&=
+\munderbar{\dot{\omega}}_1
+\times
+(\mundertilde{o}_1 - \mundertilde{o}_0)
++
+\munderbar{\omega}_1
+\times
+[
+  \munderbar{\omega}_1
+  \times
+  (\mundertilde{o}_1 - \mundertilde{o}_0)
+]
+\end{align}
+
+Our reverse force and torque recursions are[fn:noteswrong]:
+
+Let $\munderbar{f}_2 = 0, \munderbar{\tau}_2 = 0$.
+
+Note that with our frame definitions $\mundertilde{o}_1 = \mundertilde{c}_1$.
+Also note that for a single point mass, $\dmunderbar{J}_{\mundertilde{c}} = 0$
+
+\begin{align}
+\munderbar{f}_1
+&=
+\cancelto{0}{
+  \munderbar{f}_2
+}
++
+M_1
+\mundertilde{\ddot{c}}
+-
+M_1
+\munderbar{g}
+\\
+&=
+M_1
+\mundertilde{\ddot{c}}
+-
+M_1
+\munderbar{g}
+\\
+\munderbar{\tau}_1
+&=
+\cancelto{0}{
+  \munderbar{\tau}_2
+}
+-
+(\mundertilde{o}_0 - \mundertilde{c}_1)
+\times
+\munderbar{f}_1
++
+(
+  \cancelto{0}{
+    \mundertilde{o}_1 - \mundertilde{c}_1
+  }
+)
+\times
+\cancelto{0}{
+  \munderbar{f}_2
+}
++
+\cancelto{0}{
+  \dmunderbar{J}_{\mundertilde{c}_1}
+}
+\munderbar{\dot{\omega}}_1
++
+\munderbar{\omega}_1
+\times
+\cancelto{0}{
+  \dmunderbar{J}_{\mundertilde{c}_1}
+}
+\munderbar{\dot{\omega}}_1
+\\
+&=
+-
+(\mundertilde{o}_0 - \mundertilde{c}_1)
+\times
+\munderbar{f}_1
+\\
+&=
+(\mundertilde{c}_1 - \mundertilde{o}_0)
+\times
+\munderbar{f}_1
+\end{align}
+
+Our motor torque is then:
+
+\begin{align}
+\munderbar{\tau}_1^T
+\munderbar{k}_0
+&=
+u_1
+=
+\tau_d
+\end{align}
+
+
+Now that we have definitions for everything, let's use MATLAB to solve for $\tau_d$:
+
+#+begin_src matlab :session :results code output latex :exports both
+syms t l M1 real
+syms tau1(t) theta1(t)  % symbolic functions can't be declared real
+
+g = 9.81;
+j = [0 1 0]';
+k = [0 0 1]';
+
+thetad1 = (pi/2)*t^2;            % 0 <= t <= 1
+thetad2 = pi - (pi/2)*(t - 2)^2; % 1 <  t <= 2
+thetad3 = pi;                    % 2 <  t
+% Actually using <= seems to cause problems later on, using <
+% should be effectively the same
+theta1d = piecewise(...
+    t < 0, 0,...
+    t < 1, thetad1,...
+    t < 2, thetad2,...
+    thetad3);
+disp(symbolic2latex('\theta_{1d}', theta1d))
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}\theta_{1d}&=\left\{\begin{array}{cl} 0 & \text{\ if\ \ }t<0\\ \frac{\pi \,t^2}{2} & \text{\ if\ \ }t<1\\ \pi -\frac{\pi \,{\left(t-2\right)}^2}{2} & \text{\ if\ \ }t<2\\ \pi  & \mathrm{ otherwise} \end{array}\right.\end{align}
+#+end_export
+
+#+begin_src matlab :session :results code output latex :exports both
+C1 = simplify(expm(theta1*skew(k)));
+disp(symbolic2latex('C_1', C1));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}C_1&=\left(\begin{array}{ccc} \cos\left(\theta _{1}\left(t\right)\right) & -\sin\left(\theta _{1}\left(t\right)\right) & 0\\ \sin\left(\theta _{1}\left(t\right)\right) & \cos\left(\theta _{1}\left(t\right)\right) & 0\\ 0 & 0 & 1 \end{array}\right)\end{align}
+#+end_export
+
+#+begin_src matlab :session :results code output latex :exports both
+o1 = C1*(-l*j);
+disp(symbolic2latex('o_1', o1));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}o_1&=\left(\begin{array}{c} l\,\sin\left(\theta _{1}\left(t\right)\right)\\ -l\,\cos\left(\theta _{1}\left(t\right)\right)\\ 0 \end{array}\right)\end{align}
+#+end_export
+
+
+#+begin_src matlab :session :results code output latex :exports both
+omega1 = diff(theta1, t)*k;
+disp(symbolic2latex('\omega_1', omega1));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}\omega_1&=\left(\begin{array}{c} 0\\ 0\\ \frac{\partial }{\partial t} \theta _{1}\left(t\right) \end{array}\right)\end{align}
+#+end_export
+
+#+begin_src matlab :session :results code output latex :exports both
+domega1 = diff(theta1, t, 2)*k;
+disp(symbolic2latex('\dot{\omega}_1', domega1));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}\dot{\omega}_1&=\left(\begin{array}{c} 0\\ 0\\ \frac{\partial ^2}{\partial t^2} \theta _{1}\left(t\right) \end{array}\right)\end{align}
+#+end_export
+
+#+begin_src matlab :session :results code output latex :exports both
+ddo1 = cross(domega1, o1) + cross(omega1, cross(omega1, o1));
+disp(symbolic2latex('\ddot{o}_1', ddo1));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}\ddot{o}_1&=\left(\begin{array}{c} l\,\cos\left(\theta _{1}\left(t\right)\right)\,\frac{\partial ^2}{\partial t^2} \theta _{1}\left(t\right)-l\,\sin\left(\theta _{1}\left(t\right)\right)\,{\left(\frac{\partial }{\partial t} \theta _{1}\left(t\right)\right)}^2\\ l\,\sin\left(\theta _{1}\left(t\right)\right)\,\frac{\partial ^2}{\partial t^2} \theta _{1}\left(t\right)+l\,\cos\left(\theta _{1}\left(t\right)\right)\,{\left(\frac{\partial }{\partial t} \theta _{1}\left(t\right)\right)}^2\\ 0 \end{array}\right)\end{align}
+#+end_export
+
+#+begin_src matlab :session :results code output latex :exports both
+f1 = M1*ddo1 - M1*g*j;
+disp(symbolic2latex('f_1', f1));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}f_1&=\left(\begin{array}{c} -M_{1}\,\left(l\,\sin\left(\theta _{1}\left(t\right)\right)\,{\left(\frac{\partial }{\partial t} \theta _{1}\left(t\right)\right)}^2-l\,\cos\left(\theta _{1}\left(t\right)\right)\,\frac{\partial ^2}{\partial t^2} \theta _{1}\left(t\right)\right)\\ M_{1}\,\left(l\,\sin\left(\theta _{1}\left(t\right)\right)\,\frac{\partial ^2}{\partial t^2} \theta _{1}\left(t\right)+l\,\cos\left(\theta _{1}\left(t\right)\right)\,{\left(\frac{\partial }{\partial t} \theta _{1}\left(t\right)\right)}^2\right)-\frac{981\,M_{1}}{100}\\ 0 \end{array}\right)\end{align}
+#+end_export
+
+#+begin_src matlab :session :results code output latex :exports both
+tau1 = simplify(cross(o1, f1));
+disp(symbolic2latex('\tau_1', tau1));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}\tau_1&=\left(\begin{array}{c} 0\\ 0\\ M_{1}\,l^2\,\frac{\partial ^2}{\partial t^2} \theta _{1}\left(t\right)-\frac{981\,M_{1}\,l\,\sin\left(\theta _{1}\left(t\right)\right)}{100} \end{array}\right)\end{align}
+#+end_export
+
+#+begin_src matlab :session :results code output latex :exports both
+taud = tau1'*k;
+% "untranspose" theta
+taud = taud';
+disp(symbolic2latex('\tau_d', taud, 'eq:taud'));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}\tau_d&=M_{1}\,l^2\,\frac{\partial ^2}{\partial t^2} \theta _{1}\left(t\right)-\frac{981\,M_{1}\,l\,\sin\left(\theta _{1}\left(t\right)\right)}{100}\label{eq:taud}\end{align}
+#+end_export
+
+Now that we have a value for $\tau_d$, we can sub in our desired joint path:
+
+#+begin_src matlab :session :results code output latex :exports both
+taud = simplify(subs(taud, theta1, theta1d));
+disp(symbolic2latex('\tau_d(t)', taud));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}\tau_d(t)&=\left\{\begin{array}{cl} 0 & \text{\ if\ \ }t<0\\ -\frac{M_{1}\,l\,\left(981\,\sin\left(\frac{\pi \,t^2}{2}\right)-100\,\pi \,l\right)}{100} & \text{\ if\ \ }t<1\\ -\frac{M_{1}\,l\,\left(981\,\sin\left(\frac{\pi \,{\left(t-2\right)}^2}{2}\right)+100\,\pi \,l\right)}{100} & \text{\ if\ \ }t<2\\ 0 & \mathrm{ otherwise} \end{array}\right.\end{align}
+#+end_export
+
+
+Intuitively this makes sense, we want some amount of torque at the beginning to speed up, then the reverse of that torque to slow down to zero once it reaches the top.
+Then once the pendulum is at the top, it needs to have no torque to stay balanced.
+
+To find the variational equation, let's first build our state space model:
+
+#+begin_src matlab :session :results code output latex :exports both
+D = M1*l^2;
+G = M1*g*l*sin(theta1);
+f = [...
+    diff(theta1,t);...
+    -D^(-1)*G]...
+    + [...
+    0;...
+    D^(-1)*tau];
+disp(symbolic2latex('f(x, \tau)', f));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}f(x, \tau)&=\left(\begin{array}{c} \frac{\partial }{\partial t} \theta _{1}\left(t\right)\\ \frac{\tau }{M_{1}\,l^2}-\frac{981\,\sin\left(\theta _{1}\left(t\right)\right)}{100\,l} \end{array}\right)\end{align}
+#+end_export
+
+The matrices of our variational equation are:
+#+begin_src matlab :session :results code output latex :exports both
+% Can't diff with respect to another diff
+syms dtheta1v theta1v tauv;
+f_sym = subs(f, diff(theta1, t), dtheta1v);
+f_sym = subs(f_sym, theta1, theta1v);
+f_sym = subs(f_sym, tau, tauv);
+A = [diff(f_sym(1), theta1v) diff(f_sym(2), dtheta1v)];
+A = subs(A, theta1v, theta1d);
+A = subs(A, dtheta1v, diff(theta1d));
+A = subs(A, tauv, tau);
+A = simplify(A);
+disp(symbolic2latex('A(t)', A));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}A(t)&=\left(\begin{array}{cc} 0 & 1\\ \left\{\begin{array}{cl} -\frac{981}{100\,l} & \text{\ if\ \ }t<0\\ -\frac{981\,\cos\left(\frac{\pi \,t^2}{2}\right)}{100\,l} & \text{\ if\ \ }t<1\\ \frac{981\,\cos\left(\frac{\pi \,{\left(t-2\right)}^2}{2}\right)}{100\,l} & \text{\ if\ \ }t<2\\ \frac{981}{100\,l} & \mathrm{ otherwise} \end{array}\right. & 0 \end{array}\right)\end{align}
+#+end_export
+
+#+begin_src matlab :session :results code output latex :exports both
+B = diff(f_sym, tauv);
+B = subs(B, theta1v, theta1d);
+B = subs(B, dtheta1v, diff(theta1d));
+B = subs(B, tauv, tau);
+disp(symbolic2latex('B(t)', B));
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\begin{align}B(t)&=\left(\begin{array}{c} 0\\ \frac{1}{M_{1}\,l^2} \end{array}\right)\end{align}
+#+end_export
+
+
+If we assume some small error $\delta$ in our values we get:
+\begin{align}
+\dot{x}_d + \delta\dot{x}
+&=
+f(x_d + \delta x, \tau_d + \delta \tau)
+\end{align}
+
+Doing a first order Taylor series expansion to get the variational equation:
+\begin{align}
+\dot{x}_d + \delta\dot{x}
+&\approx
+f(x_d + \tau_d)
++
+\frac{\partial f}{\partial x}
+(x_d, \tau_d)
+\delta x
++
+\frac{\partial f}{\partial \tau}
+(x_d, \tau_d)
+\delta \tau
+\\
+\delta\dot{x}
+&\approx
+\frac{\partial f}{\partial x}
+(x_d, \tau_d)
+\delta x
++
+\frac{\partial f}{\partial \tau}
+(x_d, \tau_d)
+\delta \tau
+\\
+&\approx
+\frac{\partial f}{\partial x}
+(x_d, \tau_d)
+\delta x
++
+\frac{\partial f}{\partial \tau}
+(x_d, \tau_d)
+\delta \tau
+\\
+&\approx
+A(t)
+\delta x
++
+B(t)
+\delta \tau
+\end{align}
+
+If we input $\tau_d(t)$ into the system, the state will nominally track a path where our linear variational equation is valid.
+Because of this, we can instead do feedback control to drive $\delta x$ to zero.
+
+We can set:
+\begin{align}
+\delta\tau
+&=
+-F(t) \delta x
+=
+-
+\begin{bmatrix}
+K_p(t) & K_v(t)
+\end{bmatrix}
+\delta x
+\\
+\delta\dot{x}
+&\approx
+A(t)
+\delta x
++
+B(t)
+(
+  -F(t) \delta x
+)
+\\
+&\approx
+(
+  A(t)
+  -
+  B(t)F(t) 
+)
+\delta x
+\end{align}
+
+This now becomes a simple pole placement problem, where we can set $K_p(t)$ and $K_v(t)$ to place the poles of the linearized system wherever we want[fn:gainscheduling].
+
+Our controller architecture is then:
+
+[[file:feedforward.svg]]
+
+
+
+[fn:noteswrong] The notes suggests that $\munderbar{f}_n = 0$ and $\munderbar{\tau}_n = 0$.
+Presumably this is a mistake, since the gripper has mass and is attached to the robot and therefore must be held up by forces through the links.
+We will be using $\munderbar{f}_n + 1 = 0$ and $\munderbar{\tau}_n + 1 = 0$ instead.
+
+
+
+
+[fn:gainscheduling]If $\dot{A}(t) \approx 0$ and $\dot{B}(t) \approx 0$, it is easier to just assume $A(t)$ and $B(t)$ are constants to avoid calculating time varying gains.
+
+
+
+
+
+
+
+
+* Exercise 3
+
+Consider the two-link RR planar manipulator described in the dynamics section Ch.6, with
+$l_1 = \SI{1}{\meter}$, 
+$l_2 = \SI{1}{\meter}$, 
+$m_1 = \SI{1}{\kilo\gram}$, 
+$m_2 = \SI{1}{\kilo\gram}$.
+The following Simulink model (uploaded on Connect) simulates the PD+ gravity control of this manipulator
+
+
+
+#+begin_src matlab :session :results code output :exports none :eval never-export
+simulink
+#+end_src
+
+#+begin_src matlab :session :exports none :results none :eval never-export
+SetupConstants
+en_in = 1;
+open_system('JointSpaceControl');
+print -dsvg -s 'exercise3.svg'
+#+end_src
+
+#+begin_src bash :results output :exports none :eval never-export
+inkscape exercise3.svg --export-text-to-path --export-plain-svg -o exercise3_fixed.svg
+#+end_src
+
+#+RESULTS:
+
+[[file:exercise3_fixed.svg]]
+
+** Question 1: Open Loop Simulation
+
+Set the input torques to zero and simulate the open-loop system with different initial conditions.
+
+*** Answer
+
+Setting up the default values
+#+begin_src matlab :session :exports both :results output code
+SetupConstants;
+en_in = 0; % disable input
+q0
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+q0 =
+   -1.5708
+         0
+#+end_src
+
+By default the arm starts in the "arm down" position, so we expect no motion without any input torques.
+
+Let's try starting with the "arm up" position.
+We expect small simulation errors to cause the arm to start moving on its own.
+
+Simulating for \SI{15}{\second} and plotting the trajectory:
+#+begin_src matlab :session :exports both :results file
+q0 = [pi/2; 0];
+f_name = 'no_torque1.svg';
+sim('JointSpaceControl', 15);
+fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time');
+saveas(fig, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:no_torque1.svg]]
+
+As expected, the arm spends some time (about \SI{7}{\second}) extended, and then drops following a chaotic double pendulum path.
+
+Trying an "arm right" starting position:
+#+begin_src matlab :session :exports both :results file
+q0 = [0; 0];
+f_name = 'no_torque2.svg';
+sim('JointSpaceControl', 15);
+fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time');
+saveas(fig, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:no_torque2.svg]]
+
+Trying random starting position:
+#+begin_src matlab :session :exports both :results file
+q0 = 2*pi*rand(2, 1);
+f_name = 'no_torque3.svg';
+sim('JointSpaceControl', 15);
+fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time');
+saveas(fig, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:no_torque3.svg]]
+
+
+
+** Question 2: Closed Loop Cartesian Space Control
+
+Design a "stiffness" controller and implement it using Simulink blocks.
+Demonstrate the response of the controller, for gains
+$K_{p1} = \diag{\begin{bmatrix}1   & 1\end{bmatrix}}$,
+$K_{p2} = \diag{\begin{bmatrix}0.2 & 1\end{bmatrix}}$, and
+$K_{p3} = \diag{\begin{bmatrix}1   & 0.2\end{bmatrix}}$, with
+$K_{v} =  \diag{\begin{bmatrix}2   & 2\end{bmatrix}}$,
+simulating various sprint directions in cartesian space.
+Plot the end-effector trajectories from $t = 0$ to $t = \SI{15}{\second}$, from the intial position
+$q(0) = \begin{bmatrix}\theta_1(0) & \theta_2(0)\end{bmatrix}^T = \begin{bmatrix}-\pi/2 & 0\end{bmatrix}^T$
+(i.e.  end effector at
+$\mundertilde{o}_0 - 0\munderbar{i}_0 - 2\munderbar{j}_0$ to 
+$\mundertilde{o}_0 + 1\munderbar{i}_0 + 1\munderbar{j}_0$).
+
+*** Answer
+
+First, let's define a function for our Jacobian:
+#+begin_src matlab :exports code :tangle robot_jacobian.m :eval never
+function J = robot_jacobian(x_1, y_1, x_2, y_2)
+    k = [0; 0; 1];
+    o_0 = [0; 0; 0];
+    o_1 = [x_1; y_1; 0];
+    o_n = [x_2; y_2; 0];
+    J_0 = [...
+        cross(k, (o_n - o_0));...
+        k];
+    J_1 = [...
+        cross(k, (o_n - o_1));...
+        k];
+    J = [J_0 J_1];
+end
+#+end_src
+
+Now we can create our model, reusing many components from the provided model:
+#+begin_src matlab :session :exports none :results none :eval never-export
+SetupConstants
+o_desired = [1; 0; 0];
+Kpo = eye(6);
+Kvomega = eye(6);
+open_system('TaskSpaceControl');
+print -dsvg -s 'task_space_control.svg'
+#+end_src
+
+#+begin_src bash :results output :exports none :eval never-export
+inkscape task_space_control.svg --export-text-to-path --export-plain-svg -o task_space_control_fixed.svg
+#+end_src
+
+#+RESULTS:
+
+[[file:task_space_control_fixed.svg]]
+
+Let's set our gains:
+#+begin_src matlab :session :exports both :results output code
+% We only have 2 degrees of freedom, enough to set position
+% For simplicity we're ignoring different configurations
+% to reach the same position (elbow up vs elbow down) 
+Ko = zeros(3);
+Komega = zeros(3);
+
+% Values from assignment
+q0 = [-pi/2; 0];
+o_desired = [1; 1; 0];
+Kp1 = diag([1   1   0]);
+Kp2 = diag([0.2 1   0]);
+Kp3 = diag([1   0.2 0]);
+Kv  = diag([2   2   0]);
+Kpo1 = [...
+    Kp1      zeros(3);...
+    zeros(3) Ko];
+Kpo2 = [...
+    Kp2      zeros(3);...
+    zeros(3) Ko];
+Kpo3 = [...
+    Kp3      zeros(3);...
+    zeros(3) Ko];
+Kvomega = [...
+    Kv       zeros(3);...
+    zeros(3) Komega];
+
+#+end_src
+
+#+RESULTS:
+#+begin_src matlab
+#+end_src
+
+Plotting the trajectory for the first set of gains:
+#+begin_src matlab :session :exports both :results file
+f_name = 'stiffness1.svg';
+Kpo = Kpo1;
+sim('TaskSpaceControl', 15);
+fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time');
+saveas(fig, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:stiffness1.svg]]
+
+
+Plotting the trajectory for the second set of gains:
+#+begin_src matlab :session :exports both :results file
+f_name = 'stiffness2.svg';
+Kpo = Kpo2;
+sim('TaskSpaceControl', 15);
+fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time');
+saveas(fig, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:stiffness2.svg]]
+
+Plotting the trajectory for the third set of gains:
+#+begin_src matlab :session :exports both :results file
+f_name = 'stiffness3.svg';
+Kpo = Kpo3;
+sim('TaskSpaceControl', 15);
+fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time');
+saveas(fig, f_name);
+ans = f_name
+#+end_src
+
+#+RESULTS:
+[[file:stiffness3.svg]]
+
+
+
+
+\appendix
+* Skew Function
+#+begin_src matlab :exports code :tangle skew.m :eval never
+function sx = skew(s)
+    sx = [...
+         0    -s(3)  s(2);...
+         s(3)  0    -s(1);...
+        -s(2)  s(1)  0];
+end
+#+end_src
+
+* Symbolic to \LaTeX\space Function
+#+begin_src matlab :exports code :tangle symbolic2latex.m :eval never
+function out = symbolic2latex(name, exp, label)
+    if exist('label', 'var')
+        label = strcat('\label{', label, '}');
+    else
+        label = '';
+    end
+    out = strcat(...
+        '\begin{align} ',...
+        name,...
+        '&=',...
+        latex(exp),...
+        label,...
+        '\end{align}');
+end
+#+end_src
+
+* Trajectory Plotter
+
+Function based on this MATLAB Answers post:
+https://www.mathworks.com/matlabcentral/answers/5042#answer_7057
+
+#+begin_src matlab :exports code :tangle plot_trajectory.m :eval never
+function fig = plot_trajectory(x, y, t, fig)
+    if ~exist('fig', 'var')
+        fig = figure('visible', 'off');
+    end
+    colormap cool;
+    z = zeros(size(x));
+
+    surface([x;x],[y;y],[z;z],[t;t],...
+            'facecol','no',...
+            'edgecol','interp',...
+            'linew',2);
+    xlabel('X position [m]');
+    ylabel('Y position [m]');
+    axis equal;
+    ylim([-2; 2]);
+    c = colorbar;
+    c.Label.String = 'Time [s]';
+end
+#+end_src
