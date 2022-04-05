@@ -1263,7 +1263,7 @@ u_1
 Now that we have definitions for everything, let's use MATLAB to solve for $\tau_d$:
 
 #+begin_src matlab :session :results code output latex :exports both
-syms t l M1 real
+syms t l M1 tau real
 syms tau1(t) theta1(t)  % symbolic functions can't be declared real
 
 g = 9.81;
@@ -1735,7 +1735,7 @@ Plotting the trajectory for the first set of gains:
 f_name = 'stiffness1.svg';
 Kpo = Kpo1;
 sim('TaskSpaceControl', 15);
-fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time');
+fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time', 1, 1);
 saveas(fig, f_name);
 ans = f_name
 #+end_src
@@ -1749,7 +1749,7 @@ Plotting the trajectory for the second set of gains:
 f_name = 'stiffness2.svg';
 Kpo = Kpo2;
 sim('TaskSpaceControl', 15);
-fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time');
+fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time', 1, 1);
 saveas(fig, f_name);
 ans = f_name
 #+end_src
@@ -1762,7 +1762,7 @@ Plotting the trajectory for the third set of gains:
 f_name = 'stiffness3.svg';
 Kpo = Kpo3;
 sim('TaskSpaceControl', 15);
-fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time');
+fig = plot_trajectory(out_x.Data', out_y.Data', out_x.Time', 1, 1);
 saveas(fig, f_name);
 ans = f_name
 #+end_src
@@ -1808,7 +1808,7 @@ Function based on this MATLAB Answers post:
 https://www.mathworks.com/matlabcentral/answers/5042#answer_7057
 
 #+begin_src matlab :exports code :tangle plot_trajectory.m :eval never
-function fig = plot_trajectory(x, y, t, fig)
+function fig = plot_trajectory(x, y, t, xd, yd, fig)
     if ~exist('fig', 'var')
         fig = figure('visible', 'off');
     end
@@ -1819,6 +1819,12 @@ function fig = plot_trajectory(x, y, t, fig)
             'facecol','no',...
             'edgecol','interp',...
             'linew',2);
+    if exist('xd', 'var')
+        xline(xd);
+    end
+    if exist('yd', 'var')
+        yline(yd);
+    end
     xlabel('X position [m]');
     ylabel('Y position [m]');
     axis equal;
