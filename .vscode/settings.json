@@ -1,0 +1,11 @@
+{
+    "markdown-pdf.stylesRelativePathFile": true,
+    "markdown-pdf.styles": [
+        "export.css"
+    ],
+    "markdown-pdf.margin.bottom": "0mm",
+    "markdown-pdf.margin.left": "0mm",
+    "markdown-pdf.margin.right": "0mm",
+    "markdown-pdf.margin.top": "0mm",
+    "markdown-pdf.displayHeaderFooter": false
+}
